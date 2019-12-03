@@ -6,7 +6,10 @@ const {
     activeUser,
     login,
     loginByOAuth,
-    getMe
+    getMe,
+    forgotPassword,
+    resetPassword,
+    updateForgotPassword
 } = require('../controllers/auth');
 
 const router = express.Router();
@@ -19,5 +22,9 @@ router.post('/google', passport.authenticate('google-token', {session: false}), 
 router.post('/facebook', passport.authenticate("facebook-token", {session: false}), loginByOAuth);
 
 router.get('/me', passport.authenticate('jwt', {session: false}), getMe);
+
+router.post('/forgotpassword', forgotPassword);
+router.get('/resetPassword/:role/:token', resetPassword);
+router.put('/updatepassword', updateForgotPassword);
 
 module.exports = router;

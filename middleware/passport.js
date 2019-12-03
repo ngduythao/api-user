@@ -25,6 +25,10 @@ const localStratery = new LocalStrategy({
     const isMatch = await bcrypt.compare(password, user.password)
 
     if (isMatch) {
+        if (!user.isActive) {
+            return done('Tài khoản chưa được kích hoạt', false);
+        }
+        
         return done(null, user);
     } else {
         return done('Tài khoản hoặc một khẩu không chính xác', false);
