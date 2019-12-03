@@ -14,10 +14,10 @@ const localStratery = new LocalStrategy({
     usernameField: "email",
     passwordField: "password"
 }, async (email, password, done) => {
-    let user = await Student.findOne({email: email})
+    let user = await Student.findOne({email: email});
 
     if (!user) {
-        user = await Tutor.findOne({email: email})
+        user = await Tutor.findOne({email: email});
     }
 
     if (!user) return done('Không tồn tại tài khoản', false);
@@ -36,16 +36,14 @@ const jwtStrategy = new JWTStrategy({
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.JWT_SECRET
 }, async (jwtPayload, done) => {
-    console.log(jwtPayload);
     if (jwtPayload.role === 'student') {
         user = await Student.findById(jwtPayload.id);
-    } 
-    else if (jwtPayload.role === 'tutor'){
-        user = await Student.findById(jwtPayload.id);
+    } else if (jwtPayload.role === 'tutor') {
+        user = await Tutor.findById(jwtPayload.id);
     }
     
     if (user) return done(null, user);
-    else return done(err);
+    else return done('Token không hợp lệ', false);
 });
 
 

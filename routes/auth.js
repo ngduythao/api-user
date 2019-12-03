@@ -3,18 +3,21 @@ const passport = require('passport');
 
 const {
     register,
+    activeUser,
     login,
-    getMe,
-    loginByOAuth
+    loginByOAuth,
+    getMe
 } = require('../controllers/auth');
 
 const router = express.Router();
 
 router.post('/register', register);
+router.get('/active/:role/:token', activeUser);
+
 router.post('/login', login);
-router.get('/me', passport.authenticate('jwt', {session: false}), getMe);
 router.post('/google', passport.authenticate('google-token', {session: false}), loginByOAuth);
 router.post('/facebook', passport.authenticate("facebook-token", {session: false}), loginByOAuth);
 
+router.get('/me', passport.authenticate('jwt', {session: false}), getMe);
 
 module.exports = router;
