@@ -34,6 +34,7 @@ exports.login = (req, res, next) => {
       if (errMessage || !user) {
           return next(new createError(400, errMessage));
         }
+
       sendTokenResponse(200, res, user);
 })(req, res)};
 
@@ -49,11 +50,34 @@ exports.getMe = asyncHandler(async (req, res, next) => {
   });
 });
 
+
+
+// @desc      Login by using Google account
+// @route     POST /api/auth/google or /api/auth/google
+// @access    Private
+exports.getMe = asyncHandler(async (req, res, next) => {
+  if (!req.user) {
+    return next(new createError(400, 'Token không hợp lệ'));
+  }
+
+  // create new user
+  if (!req.user.role) {
+    const {role} = req.body;
+    if (role === 'student') user = await Student.create({...req.user, role})
+    else if (role === 'tutor') user = await Tutor.create({...req.user, role});
+  }
+
+  sendTokenResponse(200, res, req.user);
+});
+
+
+
 const sendTokenResponse = (statusCode, res, user) => {
   const payload = {
     id: user.id,
     role: user.role
   }
+
   const token = jwt.sign(
     payload,
     process.env.JWT_SECRET);

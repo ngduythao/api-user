@@ -2,13 +2,13 @@ const mongoose = require('mongoose');
 const constants = require('../constants/constant');
 
 const {
-    COMPLAIN_STATUS_PROCESSING,
-    COMPLAIN_STATUS_COMPLETED,
-    COMPLAIN_STATUS_CANCELED
+    COMPLAINT_STATUS_PROCESSING,
+    COMPLAINT_STATUS_COMPLETED,
+    COMPLAINT_STATUS_CANCELED
 } = constants;
 
 
-const ComplainSchema = new mongoose.Schema({
+const ComplaintSchema = new mongoose.Schema({
     title: {
         type: String,
         required: [true, 'Vui lòng điền tiêu đề khiếu nại']
@@ -27,9 +27,9 @@ const ComplainSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: [
-            COMPLAIN_STATUS_PROCESSING,
-            COMPLAIN_STATUS_COMPLETED,
-            COMPLAIN_STATUS_CANCELED
+            COMPLAINT_STATUS_PROCESSING,
+            COMPLAINT_STATUS_COMPLETED,
+            COMPLAINT_STATUS_CANCELED
         ]
     },
     description: {
@@ -38,4 +38,4 @@ const ComplainSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('Complain', ComplainSchema);
+module.exports = mongoose.model('Complaint', ComplaintSchema);
