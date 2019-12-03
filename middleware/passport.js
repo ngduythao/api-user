@@ -40,14 +40,10 @@ const jwtStrategy = new JWTStrategy({
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.JWT_SECRET
 }, async (jwtPayload, done) => {
-    if (jwtPayload.role === 'student') {
-        user = await Student.findById(jwtPayload.id);
-    } else if (jwtPayload.role === 'tutor') {
-        user = await Tutor.findById(jwtPayload.id);
+    if (!jwtPayload) {
+        return done(true, null);
     }
-    
-    if (user) return done(null, user);
-    else return done('Token không hợp lệ', false);
+    return done(null, jwtPayload);
 });
 
 
@@ -100,7 +96,7 @@ const facebookStrategyToken = new FacebookTokenStrategy({
 
             if (existingUser) return done(null, existingUser);
             
-            existingUser = await Tutor.findOne({email: emails[0].value});
+            existingUser = await Student.findOne({email: emails[0].value});
 
             if (existingUser) return done(null, existingUser);
             
