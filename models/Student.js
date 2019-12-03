@@ -1,4 +1,5 @@
-const mongoose = require('moongoose');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const StudentSchema = new mongoose.Schema({
     email: {
@@ -8,12 +9,7 @@ const StudentSchema = new mongoose.Schema({
         trim: true,
         match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Địa chỉ email không hợp lệ']
     },
-    password: {
-        type: String,
-        required: [true, 'Vui lòng điền mật khẩu'],
-        minlength: 6,
-        select: false
-    },
+    password: String,
     name: {
         type: String,
         required: [true, 'Vui lòng điền họ tên']
@@ -44,4 +40,5 @@ const StudentSchema = new mongoose.Schema({
 )
 
 
-module.exports = mongoose.model('User', StudentSchema);
+
+module.exports = mongoose.model('Student', StudentSchema);

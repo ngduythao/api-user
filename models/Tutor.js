@@ -1,4 +1,4 @@
-const mongoose = require('moongoose');
+const mongoose = require('mongoose');
 
 const TutorSchema = new mongoose.Schema({
     email: {
@@ -8,12 +8,7 @@ const TutorSchema = new mongoose.Schema({
         trim: true,
         match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Địa chỉ email không hợp lệ']
     },
-    password: {
-        type: String,
-        required: [true, 'Vui lòng điền mật khẩu'],
-        minlength: 6,
-        select: false
-    },
+    password: String,
     name: {
         type: String,
         required: [true, 'Vui lòng điền họ tên']
@@ -67,4 +62,4 @@ TutorSchema.virtual('histories', {
     justOne: false
 });
 
-module.exports = mongoose.model('User', TutorSchema);
+module.exports = mongoose.model('Tutor', TutorSchema);
