@@ -6,6 +6,7 @@ const asyncHandler = require('../middleware/async');
 const sgMail = require('@sendgrid/mail');
 const crypto = require('crypto');
 
+const User = require('../models/User');
 const Tutor = require('../models/Tutor');
 const Student = require('../models/Student');
 
@@ -17,26 +18,34 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 // @access    Public
 exports.register = asyncHandler(async (req, res, next) => {
   let { name, email, password, role } = req.body;
-  let user;
+  let user, student, tutor;
 
-  user = await Student.findOne({email: email});
-  if (user) return next(new createError(400, 'Tài khoản đã tồn tại'));
-
-  user = await Tutor.findOne({email: email});
+  user = await User.findOne({email: email});
   if (user) return next(new createError(400, 'Tài khoản đã tồn tại'));
 
   const accountToken = await crypto.randomBytes(32).toString('hex');
   const salt = await bcrypt.genSalt(10);
   password = await bcrypt.hash(password, salt);
   
-  if (role === 'student') user = await Student.create({name, email, password, accountToken})
-  else if (role === 'tutor') user = await Tutor.create({name, email, password, accountToken});
+  user = await User.create({
+    email,
+    password,
+    name,
+    role,
+    accountToken
+  });
+
+  if (role === 'student') {
+    student = await Student.create({user: user.id})
+  } else if (role === 'tutor') {
+    tutor = await Tutor.create({user: user.id});
+  }
 
   const msg = {
     to: email,
     from: process.env.HOST_EMAIL,
     subject: 'Kích hoạt tài khoản Uber for tutor',
-    html: `<p> Chào mừng bạn đến với Uber for tutor. \nBạn vui lòng nhấn vào đường dẫn sau <a href="${process.env.SERVER_URL}/api/auth/active/${role}/${accountToken}"> để kích hoạt tài khoản </a>.</p> `
+    html: `<p> Chào mừng bạn đến với Uber for tutor. \nBạn vui lòng nhấn vào đường dẫn sau <a href="${process.env.SERVER_URL}/api/auth/active/${accountToken}"> để kích hoạt tài khoản </a>.</p> `
   }
 
   try {
@@ -46,25 +55,21 @@ exports.register = asyncHandler(async (req, res, next) => {
       message: 'Chúng tôi đã gửi một đường dẫn kích hoạt tài khoản đến địa chỉ email của bạn'
     });
   } catch (error) {
-    if (role === 'student') user = await Student.deleteOne(user);
-    else if (role === 'tutor') user = await Tutor.deleteOne(user);
+    if (role === 'student')  await Student.deleteOne(student);
+    else if (role === 'tutor')  await Tutor.deleteOne(tutor);
+    await User.deleteOne(user);
     return next(new createError(400, 'Server bị lỗi, không thể gửi email'));
   }
-  
-
-  // sendTokenResponse(200, res, user);
 });
 
 
 // @desc      Active new user
-// @route     GET /api/auth/active/:role/:token
+// @route     GET /api/auth/active/:token
 // @access    Public
 exports.activeUser = asyncHandler(async(req, res, next) => {
-  const {role, token} = req.params;
-  let user;
-
-  if (role === 'student') user = await Student.findOne({accountToken: token});
-  else if (role ==='tutor') user = await Tutor.findOne({accountToken: token})
+  const {token} = req.params;
+  
+  const user = await User.findOne({accountToken: token});
 
   if (!user) return next(new createError(400, 'Token không hợp lệ'));
 
@@ -106,8 +111,8 @@ exports.loginByOAuth = asyncHandler(async (req, res, next) => {
   let user;
   if (!req.user.role) {
     const {role} = req.body;
-    if (role === 'student') user = await Student.create(req.user)
-    else if (role === 'tutor') user = await Tutor.create(req.user);
+    if (role === 'student') user = await Student.create({user: req.user.id});
+    else if (role === 'tutor') user = await Tutor.create({user: req.user.id});
   }
 
   sendTokenResponse(200, res, user);
@@ -135,10 +140,8 @@ exports.getMe = asyncHandler(async (req, res, next) => {
 // @access    Public
 exports.forgotPassword = asyncHandler(async (req, res, next) => {
   const {email} = req.body;
-  let user;
-  console.log(email);
-  user = await Student.findOne({email: email});
-  if (!user) user = await Tutor.findOne({email: email});
+
+  const user = await User.findOne({email: email});
 
   if (!user) {
     return next(new createError(404, 'Địa chỉ email không hợp lệ'));
@@ -157,7 +160,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
     from: process.env.HOST_EMAIL,
     subject: 'Lấy lại mật khẩu ứng dụng Uber for tutor',
     html: `<p> Bạn nhận được tin nhắn này vì bạn (hoặc ai đó) đã gửi yêu cầu lấy lại mật khẩu ứng dụng Uber for tutor. \n
-    Nhấn vào đường dẫn sau <a href="${process.env.SERVER_URL}/api/auth/resetpassword/${user.role}/${accountToken}"> để tạo mới mật khẩu </a>.</p> `
+    Nhấn vào đường dẫn sau <a href="${process.env.SERVER_URL}/api/auth/resetpassword/${accountToken}"> để tạo mới mật khẩu </a>.</p> `
   }
 
   try {
@@ -176,27 +179,16 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
 
 // @desc      Get access to page reset password
-// @route     GET /api/auth/resetpassword/:role/:token
+// @route     GET /api/auth/resetpassword/:token
 // @access    Public
 exports.resetPassword = asyncHandler(async (req, res, next) => {
-  const {role, token} = req.params;
-  let user;
-
-  if (role === 'student') {
-    user = await Student.findOne({
+  const {token} = req.params;
+  const user = await User.findOne({
       accountToken: token,
       accountTokenExpire: {
         $gt: Date.now()
       }
     });
-  } else if (role === 'tutor') {
-    user = await Tutor.findOne({
-      accountToken: token,
-      accountTokenExpire: {
-        $gt: Date.now()
-      }
-    })
-  }
 
   if (!user) return next(new createError(400, 'Token không hợp lệ'));
 
@@ -209,24 +201,13 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 // @route     PUT /api/auth/updatepassword
 // @access    Public
 exports.updateForgotPassword = asyncHandler(async (req, res, next) => {
-  const {role, token, newPassword} = req.body;
-  let user;
-
-  if (role === 'student') {
-    user = await Student.findOne({
+  const {token, newPassword} = req.body;
+  const user = await User.findOne({
       accountToken: token,
       accountTokenExpire: {
         $gt: Date.now()
       }
     });
-  } else if (role === 'tutor') {
-    user = await Tutor.findOne({
-      accountToken: token,
-      accountTokenExpire: {
-        $gt: Date.now()
-      }
-    })
-  }
 
   if (!user) return next(new createError(400, 'Token không hợp lệ'));
 
@@ -247,6 +228,8 @@ const sendTokenResponse = (statusCode, res, user) => {
     role: user.role
   }
 
+  console.log(payload);
+  
   const token = jwt.sign(
     payload,
     process.env.JWT_SECRET);

@@ -1,41 +1,13 @@
 const mongoose = require('mongoose');
 
 const TutorSchema = new mongoose.Schema({
-    email: {
-        type: String,
-        required: [true, 'Vui lòng điền địa chỉ email'],
-        unique: true,
-        trim: true,
-        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Địa chỉ email không hợp lệ']
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: true
     },
-    password: String,
-    name: {
-        type: String,
-        required: [true, 'Vui lòng điền họ tên']
-    },
-    address: String,
-    avatar: String,
-    role: {
-        type: String,
-        default: 'tutor'
-    },
-    facebook: {
-        id: String,
-        accessToken: String
-    },
-    google: {
-        id: String,
-        accessToken: String
-    },
-    isActive: {
-        type: Boolean,
-        default: false
-    },
-    accountToken: String, // use for active user, reset password
-    accountTokenExpire: Date,
     paymentPerHour: {
-        type: Number,
-        default: 0
+        type: Number
     },
     specialization: {
         type: mongoose.Schema.ObjectId,
@@ -48,7 +20,6 @@ const TutorSchema = new mongoose.Schema({
     selfIntroduction: String,
     successRate: Number,
     averageRating: Number,
-    createdAt: {type: Date,default: Date.now}
 }, {
     toJSON: {virtuals: true},
     toObject: {virtuals: true},

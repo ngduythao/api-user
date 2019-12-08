@@ -20,7 +20,7 @@ const {
 const router = express.Router();
 
 router.post('/register', register);
-router.get('/active/:role/:token', activeUser);
+router.get('/active/:token', activeUser);
 
 router.post('/login', login);
 router.post('/google', passport.authenticate('google-token', {session: false}), loginByOAuth);
@@ -29,7 +29,7 @@ router.post('/facebook', passport.authenticate("facebook-token", {session: false
 router.get('/me', protected, getMe);
 
 router.post('/forgotpassword', forgotPassword);
-router.get('/resetPassword/:role/:token', resetPassword);
+router.get('/resetPassword/:token', resetPassword);
 router.put('/updatepassword', updateForgotPassword);
 
 module.exports = router;

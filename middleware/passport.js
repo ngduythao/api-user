@@ -6,19 +6,17 @@ const FacebookTokenStrategy = require('passport-facebook-token');
 const GoogleTokenStrategy = require('passport-google-token').Strategy;
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
-const Tutor = require('../models/Tutor');
-const Student = require('../models/Student');
+const User = require('../models/User');
 
 
 const localStratery = new LocalStrategy({
     usernameField: "email",
     passwordField: "password"
 }, async (email, password, done) => {
-    let user = await Student.findOne({email: email});
+    let user = await User.findOne({
+        email: email
+    });
 
-    if (!user) {
-        user = await Tutor.findOne({email: email});
-    }
 
     if (!user) return done('Không tồn tại tài khoản', false);
 
@@ -56,12 +54,7 @@ const googleStrategyToken = new GoogleTokenStrategy({
             const {id, displayName, emails, photos} = profile;
 
             // find in Tutor users
-            let existingUser = await Tutor.findOne({email: emails[0].value});
-
-            if (existingUser) return done(null, existingUser);
-            
-            // find in Student users
-            existingUser = await Student.findOne({email: emails[0].value});
+            let existingUser = await User.findOne({email: emails[0].value});
 
             if (existingUser) return done(null, existingUser);
             
@@ -92,13 +85,10 @@ const facebookStrategyToken = new FacebookTokenStrategy({
         try {
             const {id, displayName, emails, photos} = profile;
 
-            let existingUser = await Tutor.findOne({email: emails[0].value});
+            let existingUser = await User.findOne({email: emails[0].value});
 
             if (existingUser) return done(null, existingUser);
             
-            existingUser = await Student.findOne({email: emails[0].value});
-
-            if (existingUser) return done(null, existingUser);
             
             // create new user
             const user = {

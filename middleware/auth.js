@@ -11,9 +11,9 @@ const protected = (req, res, next) => {passport.authenticate('jwt', {session: fa
 
         let user;
         if (jwtPayload.role === 'student') {
-            user = await Student.findById(jwtPayload.id);
+            user = await Student.findOne({user: jwtPayload.id}).populate('user');
         } else if (jwtPayload.role === 'tutor') {
-            user = await Tutor.findById(jwtPayload.id);
+            user = await Tutor.findOne({user: jwtPayload.id}).populate('user');
         }
         req.user = user;
         next();
