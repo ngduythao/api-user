@@ -3,7 +3,9 @@ const createError = require('http-errors');
 const Tutor = require('../models/Tutor');
 const Student = require('../models/Student');
 
-const protected = (req, res, next) => {passport.authenticate('jwt', {session: false,
+const protected = (req, res, next) => {
+    passport.authenticate('jwt', {
+        session: false,
     }, async (error, jwtPayload) => {
         if (error || !jwtPayload) {
             return next(new createError(401, 'Bạn không thể truy cập trang này'));
@@ -11,9 +13,13 @@ const protected = (req, res, next) => {passport.authenticate('jwt', {session: fa
 
         let user;
         if (jwtPayload.role === 'student') {
-            user = await Student.findOne({user: jwtPayload.id}).populate('user');
+            user = await Student.findOne({
+                userInfo: jwtPayload.id
+            }).populate('userInfo');
         } else if (jwtPayload.role === 'tutor') {
-            user = await Tutor.findOne({user: jwtPayload.id}).populate('user');
+            user = await Tutor.findOne({
+                userInfo: jwtPayload.id
+            }).populate('userInfo');
         }
         req.user = user;
         next();
@@ -23,7 +29,7 @@ const protected = (req, res, next) => {passport.authenticate('jwt', {session: fa
 
 const authorized = (...roles) => {
     return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
+        if (!roles.includes(req.user.userInfo.role)) {
             return next(new createError(403, 'Bạn không thể đủ quyền hạn truy cập trang này'));
         }
         next();
@@ -31,6 +37,6 @@ const authorized = (...roles) => {
 };
 
 module.exports = {
-    protected, 
+    protected,
     authorized
 };

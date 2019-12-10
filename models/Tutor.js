@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const TutorSchema = new mongoose.Schema({
-    user: {
+    userInfo: {
         type: mongoose.Schema.ObjectId,
         ref: 'User',
         required: true
@@ -17,7 +17,7 @@ const TutorSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'Tag'
     }],
-    selfIntroduction: String,
+    selfIntro: String,
     successRate: Number,
     averageRating: Number,
 }, {
