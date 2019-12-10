@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const StudentSchema = new mongoose.Schema({
-    user: {
+    userInfo: {
         type: mongoose.Schema.ObjectId,
         ref: 'User',
         required: true

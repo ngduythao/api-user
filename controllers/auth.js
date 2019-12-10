@@ -36,9 +36,13 @@ exports.register = asyncHandler(async (req, res, next) => {
   });
 
   if (role === 'student') {
-    student = await Student.create({user: user.id})
+    student = await Student.create({
+      userInfo: user.id
+    })
   } else if (role === 'tutor') {
-    tutor = await Tutor.create({user: user.id});
+    tutor = await Tutor.create({
+      userInfo: user.id
+    });
   }
 
   const msg = {
@@ -111,8 +115,12 @@ exports.loginByOAuth = asyncHandler(async (req, res, next) => {
   let user;
   if (!req.user.role) {
     const {role} = req.body;
-    if (role === 'student') user = await Student.create({user: req.user.id});
-    else if (role === 'tutor') user = await Tutor.create({user: req.user.id});
+    if (role === 'student') user = await Student.create({
+      userInfo: req.user.id
+    });
+    else if (role === 'tutor') user = await Tutor.create({
+      userInfo: req.user.id
+    });
   }
 
   sendTokenResponse(200, res, user);
@@ -124,7 +132,7 @@ exports.loginByOAuth = asyncHandler(async (req, res, next) => {
 // @access    Private
 exports.getMe = asyncHandler(async (req, res, next) => {
   if (!req.user) {
-    return next(new createError(400, 'Đăng nhập không thành công'));
+    return next(new createError(400, 'Vui lòng đăng nhập'));
   }
 
   res.status(200).json({
