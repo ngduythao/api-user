@@ -23,7 +23,7 @@ const protected = (req, res, next) => {passport.authenticate('jwt', {session: fa
 
 const authorized = (...roles) => {
     return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
+        if (!roles.includes(req.user.user.role)) {
             return next(new createError(403, 'Bạn không thể đủ quyền hạn truy cập trang này'));
         }
         next();

@@ -12,6 +12,7 @@ const cors = require('cors')
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
+const tutorRoute = require('./routes/tutors');
 
 const app = express();
 app.use(cors());
@@ -30,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/auth', authRouter);
-
+app.use('/api/tutors', tutorRoute);
 app.use(errorHandler);
 
 module.exports = app;
