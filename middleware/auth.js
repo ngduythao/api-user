@@ -21,6 +21,9 @@ const protected = (req, res, next) => {
                 userInfo: jwtPayload.id
             }).populate('userInfo');
         }
+        if (!user) {
+            return next(new createError(401, 'Token không hợp lệ'));
+        }
         req.user = user;
         next();
     })(req, res, next);
