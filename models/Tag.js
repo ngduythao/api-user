@@ -5,6 +5,10 @@ const TagSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Vui lòng điền tag kĩ năng']
     },
+    isActive:{
+        type: Boolean,
+        default: true
+    }
 });
 
 module.exports = mongoose.model('Tag', TagSchema);

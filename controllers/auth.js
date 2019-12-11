@@ -56,7 +56,9 @@ exports.register = asyncHandler(async (req, res, next) => {
     await sgMail.send(msg);
     res.status(200).json({
       success: true,
-      message: 'Chúng tôi đã gửi một đường dẫn kích hoạt tài khoản đến địa chỉ email của bạn'
+      data: {
+        message: 'Chúng tôi đã gửi một đường dẫn kích hoạt tài khoản đến địa chỉ email của bạn'
+      }
     });
   } catch (error) {
     if (role === 'student')  await Student.deleteOne(student);
@@ -175,7 +177,9 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
     await sgMail.send(msg);
     res.status(200).json({
       success: true,
-      message: 'Chúng tôi đã gửi một đường dẫn tạo mới mật khẩu đến địa chỉ email của bạn'
+      data: {
+        message: 'Chúng tôi đã gửi một đường dẫn tạo mới mật khẩu đến địa chỉ email của bạn'
+      }
     });
   } catch (error) {
     user.accountToken = undefined;
@@ -244,6 +248,8 @@ const sendTokenResponse = (statusCode, res, user) => {
 
   res.status(statusCode).json({
     success: true,
-    token
+    data: {
+      token
+    }
   });
 }
