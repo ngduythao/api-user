@@ -37,7 +37,7 @@ const advancedSearch = (model, populate) => async (req, res, next) => {
 
     // ex: select=paymentPerHour&page=2&limit=10
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 25;
+    const limit = parseInt(req.query.limit, 10) || 8;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
     const total = await model.countDocuments();
@@ -52,7 +52,7 @@ const advancedSearch = (model, populate) => async (req, res, next) => {
     try {
        results  = await query;
     } catch (error) {
-        return next(new createError(404, 'Không tìm thấy nội dung'));
+        return next(new createError(404, 'Resource not found'));
     }
 
     

@@ -18,18 +18,18 @@ const localStratery = new LocalStrategy({
     });
 
 
-    if (!user) return done('Không tồn tại tài khoản', false);
+    if (!user) return done('Account doesnt exist', false);
 
     const isMatch = await bcrypt.compare(password, user.password)
 
     if (isMatch) {
         if (!user.isActive) {
-            return done('Tài khoản chưa được kích hoạt', false);
+            return done('Please active account', false);
         }
         
         return done(null, user);
     } else {
-        return done('Tài khoản hoặc một khẩu không chính xác', false);
+        return done('Invalid credentials', false);
     }
 })
 

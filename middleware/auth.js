@@ -8,7 +8,7 @@ const protected = (req, res, next) => {
         session: false,
     }, async (error, jwtPayload) => {
         if (error || !jwtPayload) {
-            return next(new createError(401, 'Bạn không thể truy cập trang này'));
+            return next(new createError(401, 'Please sign in to continue'));
         }
 
         let user;
@@ -22,7 +22,7 @@ const protected = (req, res, next) => {
             }).populate('userInfo');
         }
         if (!user) {
-            return next(new createError(401, 'Token không hợp lệ'));
+            return next(new createError(401, 'Token invalid'));
         }
         req.user = user;
         next();
@@ -33,7 +33,7 @@ const protected = (req, res, next) => {
 const authorized = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user.userInfo.role)) {
-            return next(new createError(403, 'Bạn không thể đủ quyền hạn truy cập trang này'));
+            return next(new createError(403, 'You are not authorized to access this page'));
         }
         next();
     };

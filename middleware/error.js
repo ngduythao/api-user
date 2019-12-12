@@ -9,13 +9,13 @@ const errorHandler = (err, req, res, next) => {
 
     // Mongoose bad ObjectId
     if (err.name === 'CastError') {
-        const message = `Không tìm thấy dữ liệu`;
+        const message = `Resource not found`;
         error = new createError(404, message);
     }
 
     // Mongoose duplicate key
     if (err.code === 11000) {
-        const message = 'Dữ liệu đã tồn tại, vui lòng chọn thông tin khác';
+        const message = 'Data is already existed, please choose another one';
         error = new createError(404,message);
     }
 

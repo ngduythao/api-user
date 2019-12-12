@@ -4,22 +4,25 @@ const bcrypt = require('bcryptjs');
 const UserSchema = new mongoose.Schema({
     email: {
         type: String,
-        required: [true, 'Vui lòng điền địa chỉ email'],
+        required: [true, 'Please fill in email'],
         unique: true,
         trim: true,
-        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Địa chỉ email không hợp lệ']
+        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Email invalid']
     },
     password: String,
     name: {
         type: String,
-        required: [true, 'Vui lòng điền họ tên']
+        required: [true, 'Please fill in your name']
     },
     role: {
         type: String,
         enum: ['student', 'tutor']
     },
     address: String,
-    avatar: String,
+    avatar: {
+        type: String,
+        default: 'https://my-final-project-ptudwnc.s3.amazonaws.com/default-image/41ea2374-59c9-409e-a8ad-21a8020e0b2a.jpg'
+    },
     facebook: {
         id: String,
         accessToken: String

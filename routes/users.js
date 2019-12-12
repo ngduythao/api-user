@@ -4,7 +4,8 @@ const router = express.Router();
 const {protected, authorized} =require('../middleware/auth')
 
 const {
-  updateUser
+  updateUser,
+  updatePassword
 } = require('../controllers/user');
 const {getSignedUrl} = require('../controllers/upload');
 
@@ -13,6 +14,10 @@ router.use(protected)
 router
   .route('/:id')
   .put(updateUser)
+
+router
+  .route('/:id/newpw')
+  .put(updatePassword)
 
 router
   .route('/upload')
