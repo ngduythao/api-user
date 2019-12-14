@@ -5,7 +5,10 @@ const Tutor = require('../models/Tutor');
 // @route     GET /api/tutors
 // @access    Public
 exports.getTutors = asyncHandler(async (req, res, next) => {
-    return res.status(200).json(res.advancedSearch);
+     res.status(200).json({
+         success: true,
+         data: res.advancedSearch
+     });
 });
 
 

@@ -1,7 +1,7 @@
 const createError = require('http-errors');
 
 const advancedSearch = (model, populate) => async (req, res, next) => {
-    let query, results;
+    let query, results, total;
 
     const reqQuery = {
         ...req.query
@@ -16,9 +16,9 @@ const advancedSearch = (model, populate) => async (req, res, next) => {
     // https://stackoverflow.com/questions/11839765/whats-wrong-with-in-in-mongoose
     // Create operators by $ before operators
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
-    
-    query = model.find(JSON.parse(queryStr));
 
+    query = model.find(JSON.parse(queryStr));
+    total = await model.find(JSON.parse(queryStr)).countDocuments();
 
     // ex: ?select=paymentPerHour,userInfo
     if (req.query.select) {
@@ -40,7 +40,7 @@ const advancedSearch = (model, populate) => async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 8;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    const total = await model.countDocuments();
+    // const total = await model.countDocuments();
 
     query = query.skip(startIndex).limit(limit);
 
@@ -50,21 +50,20 @@ const advancedSearch = (model, populate) => async (req, res, next) => {
 
 
     try {
-       results  = await query;
+        results = await query;
     } catch (error) {
         return next(new createError(404, 'Resource not found'));
     }
 
-    
     if (req.query.address) {
         results = results.filter(result => result.userInfo.address.includes(req.query.address));
     }
-    
+
     // this is if location is object, populate property then find
     // results = results.filter(result =>
     //     Object.values(req.query.address).some(property =>
     //         Object.values(result.address).includes(property)));
-    
+
     const pagination = {};
 
     if (endIndex < total) {
@@ -82,10 +81,9 @@ const advancedSearch = (model, populate) => async (req, res, next) => {
     }
 
     res.advancedSearch = {
-        success: true,
         count: results.length,
         pagination,
-        data: results
+        results
     };
     next();
 };
