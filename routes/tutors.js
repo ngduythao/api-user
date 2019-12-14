@@ -17,25 +17,7 @@ const {
 
 router
     .route('/')
-    .get(advancedSearch(Tutor, [{
-        path: 'userInfo',
-        select: 'email name address avatar',
-        match: {
-            isActive: true
-        }
-    }, {
-        path: 'tags',
-        select: 'name',
-        match: {
-            isActive: true
-        }
-    }, {
-        path: 'specialization',
-        select: 'name',
-        match: {
-            isActive: true
-        }
-    }]), getTutors);
+    .get(getTutors);
 
 
 router
