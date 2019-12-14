@@ -26,7 +26,8 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 const tutorsRouter = require('./routes/tutors');
-
+const tagsRouter = require('./routes/tag');
+const specializationsRouter = require('./routes/specialization');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -40,6 +41,8 @@ app.use('/api', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/tutors', tutorsRouter);
+app.use('/api/tags', tagsRouter);
+app.use('/api/specializations', specializationsRouter);
 app.use(errorHandler);
 
 module.exports = app;
