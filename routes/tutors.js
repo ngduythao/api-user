@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const Tutor = require('../models/Tutor');
 
 const {
     protected,
     authorized
 } = require('../middleware/auth')
 
-const advancedSearch = require('../middleware/advancedSearch');
 
 const {
     getTutors,
@@ -17,11 +15,8 @@ const {
 
 router
     .route('/')
-    .get(getTutors);
-
-
-router
-    .route('/:id')
+    .get(getTutors)
     .put(protected, authorized('tutor'), updateTutor);
+
 
 module.exports = router;

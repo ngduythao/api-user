@@ -13,31 +13,28 @@ const protectedGetMe = (req, res, next) => {
 
         let user;
         if (jwtPayload.role === 'student') {
-            user = await Student.findOne({
-                userInfo: jwtPayload.id
-            }).populate('userInfo');
+            user = await Student.findById(jwtPayload.id).populate('userInfo');
         } else if (jwtPayload.role === 'tutor') {
-            user = await Tutor.findOne({
-                userInfo: jwtPayload.id
-            }).populate([{
-                path: 'userInfo',
-                select: '-password',
-                match: {
-                    isActive: true
-                }
-            }, {
-                path: 'tags',
-                select: 'name',
-                match: {
-                    isActive: true
-                }
-            }, {
-                path: 'specialization',
-                select: 'name',
-                match: {
-                    isActive: true
-                }
-            }]);
+            user = await Tutor.findById(jwtPayload.id)
+                .populate([{
+                    path: 'userInfo',
+                    select: '-password',
+                    match: {
+                        isActive: true
+                    }
+                }, {
+                    path: 'tags',
+                    select: 'name',
+                    match: {
+                        isActive: true
+                    }
+                }, {
+                    path: 'specialization',
+                    select: 'name',
+                    match: {
+                        isActive: true
+                    }
+                }]);
         }
         if (!user) {
             return next(new createError(401, 'Token invalid'));
@@ -57,7 +54,7 @@ const protected = (req, res, next) => {
 
         console.log('in protected jwtPaylod');
         console.log(jwtPayload);
-
+        // id of user
         req.user = jwtPayload;
         next();
     })(req, res, next);

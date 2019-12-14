@@ -6,7 +6,7 @@ const User = require('../models/User');
 
 exports.updateUser = asyncHandler(async (req, res, next) => {
     let user = await User.findOne({
-        _id: req.user.id,
+        _id: req.user.userId,   // id of user, not full user
         isActive: true
     });
 
@@ -40,7 +40,7 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
 
     
     const user = await User.findOne({
-        _id: req.user.id,
+        _id: req.user.userId,
         isActive: true
     });
 

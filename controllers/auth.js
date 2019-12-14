@@ -97,11 +97,23 @@ exports.activeUser = asyncHandler(async(req, res, next) => {
 // @route     POST /api/auth/login
 // @access    Public
 exports.login = (req, res, next) => {
-    passport.authenticate('local', {session: false}, (errMessage, user) => {
-      if (errMessage || !user) {
-          return next(new createError(400, errMessage));
-        }
-      sendTokenResponse(200, res, user);
+    passport.authenticate('local', {session: false}, async (errMessage, user) => {
+          if (errMessage || !user) {
+            return next(new createError(400, errMessage));
+          }
+
+          let fullUser;
+
+          if (user.role === 'student') {
+            fullUser = await Student.findOne({userInfo: user.id});
+          }
+          else if (user.role === 'tutor') {
+            fullUser = await Tutor.findOne({userInfo: user.id});
+          }
+          fullUser.userId = user.id;
+          fullUser.role = user.role;
+
+          sendTokenResponse(200, res, fullUser);
 })(req, res)};
 
 
@@ -137,6 +149,7 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     return next(new createError(400, 'Please sign in to continue'));
   }
 
+  // user is tutor or student, not user
   res.status(200).json({
     success: true,
     data: req.user
@@ -230,13 +243,29 @@ exports.updateForgotPassword = asyncHandler(async (req, res, next) => {
   user.accountTokenExpire = undefined;
   await user.save();
 
-  sendTokenResponse(200, res, user);
+  let fullUser;
+
+  if (user.role === 'student') {
+    fullUser = await Student.findOne({
+      userInfo: user.id
+    });
+  } else if (user.role === 'tutor') {
+    fullUser = await Tutor.findOne({
+      userInfo: user.id
+    });
+  }
+  fullUser.userId = user.id;
+  fullUser.role = user.role;
+
+  sendTokenResponse(200, res, fullUser);
 });
 
 
 const sendTokenResponse = (statusCode, res, user) => {
+  console.log(user);
   const payload = {
     id: user.id,
+    userId: user.userId,
     role: user.role
   }
 

@@ -1,8 +1,9 @@
 const mongoose = require('mongoose')
+const createError = require('http-errors');
 
 const asyncHandler = require('../middleware/async');
 const Tutor = require('../models/Tutor');
-const User = require('../models/User');
+
 
 // @route     GET /api/tutors
 // @access    Public
@@ -12,6 +13,7 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
     const matchObject = {};
+    const sortObject = {};
     const pagination = {};
 
     if (req.query.address) {
@@ -54,13 +56,13 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
     }
 
     if (req.query.sort) {
-        const sortObject = {};
         const sorts = req.query.sort.split(',');
         for (let s of sorts) {
             if (s[0] === '-') sortObject[s] = -1; // descending
             else sortObject[s] = 1; // ascending            
         }
-        req.query.sort = sortObject;
+    } else {
+        sortObject['successRate'] = -1;
     }
 
     // console.log(matchObject);
@@ -87,7 +89,7 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
 
     const pipelinePopulate = [
         {
-            $sort: req.query.sort
+            $sort: sortObject
         },
         {
             $skip: startIndex,
@@ -153,13 +155,34 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
 // @note      only tutor can update these information, and use id of tutor - not user
 exports.updateTutor = asyncHandler(async (req, res, next) => {
     const user = await Tutor.findOneAndUpdate({
-            _id: req.params.id,
+            _id: req.user.id,
         }, req.body, {
             new: true,
             runValidators: true
         })
-        .populate('userInfo');
-
+        .populate([{
+            path: 'userInfo',
+            select: '-password',
+            match: {
+                isActive: true
+            }
+        }, {
+            path: 'tags',
+            select: 'name',
+            match: {
+                isActive: true
+            }
+        }, {
+            path: 'specialization',
+            select: 'name',
+            match: {
+                isActive: true
+            }
+        }]);
+    
+    if (!user) {
+        return next (new createError(404, 'User not found'));
+    }
     res.status(200).json({
         success: true,
         data: user
