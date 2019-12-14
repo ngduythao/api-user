@@ -12,11 +12,11 @@ const {getSignedUrl} = require('../controllers/upload');
 router.use(protected)
 
 router
-  .route('/:id')
+  .route('/')
   .put(updateUser)
 
 router
-  .route('/:id/newpw')
+  .route('/newpw')
   .put(updatePassword)
 
 router
