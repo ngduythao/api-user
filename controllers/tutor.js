@@ -7,10 +7,35 @@ const User = require('../models/User');
 // @route     GET /api/tutors
 // @access    Public
 exports.getTutors = asyncHandler(async (req, res, next) => {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 8;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
     const matchObject = {};
-    if (!req.query.address) {
-        req.query.address = 'King';
+    const pagination = {};
+
+    if (req.query.address) {
+        matchObject['userInfo.address'] = {
+            $regex: req.query.address,
+            '$options': 'i'
+        }
     }
+
+    if (req.query.paymentPerHour) {
+        const parseField = ['gt', 'gte', 'lt', 'lte'];
+        parseField.forEach(param => {
+            if (req.query.paymentPerHour[param]) {
+                req.query.paymentPerHour[param] = parseInt(req.query.paymentPerHour[param]);
+            }
+        })
+
+        const queryStr = JSON.stringify(req.query)
+            .replace(/\b(gt|gte|lt|lte)\b/g, match => `$${match}`);
+        const query = (JSON.parse(queryStr));
+
+        matchObject.paymentPerHour = query.paymentPerHour;
+    }
+
 
     if (req.query.specialization) {
         req.query.specialization = mongoose.Types.ObjectId(req.query.specialization);
@@ -23,7 +48,6 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
         const tags = req.query.tags.split(',');
         for (let i = 0; i < tags.length; i++) tags[i] = mongoose.Types.ObjectId(tags[i]);
         req.query.tags = tags;
-        console.log(typeof (tags[0]), typeof (mongoose.Types.ObjectId('5df3a6a8a0a5d03dac29e3c1')));
         matchObject.tags = {
             $all: req.query.tags
         }
@@ -39,42 +63,38 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
         req.query.sort = sortObject;
     }
 
+    // console.log(matchObject);
 
-
-    const pipeline = [{
+    const pipelineSearch = [
+        {
             $lookup: {
                 from: 'users',
                 localField: 'userInfo',
                 foreignField: '_id',
-                as: 'userInfo' // override the old one
+                as: 'userInfo'
             }
         },
         {
-            $unwind: '$userInfo' // now this look like populate
+            $unwind: '$userInfo'
         },
         {
             $match: {
                 ...matchObject,
-                'userInfo.address': {
-                    $regex: req.query.address,
-                    '$options': 'i'
-                },
-                paymentPerHour: {
-                    $gte: 15,
-                    $lte: 25
-                }
             }
+        }
+    ]
+
+
+    const pipelinePopulate = [
+        {
+            $sort: req.query.sort
         },
         {
-            $sort: req.query.sort // {'userInfo.name': 1}
+            $skip: startIndex,
         },
         {
-            $skip: parseInt(req.query.page, 10) || 1,
+            $limit: limit
         },
-        {
-            $limit: parseInt(req.query.limit, 10) || 8
-        },
-        // populate the
         {
             $lookup: {
                 from: 'tags',
@@ -96,15 +116,34 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
         }
     ]
 
+    const pipeline = [...pipelineSearch, ...pipelinePopulate];
+    const results = await Tutor.aggregate(pipeline);
 
-    const tutors = await Tutor.aggregate(pipeline)
+    const tutors = await Tutor.aggregate(pipelineSearch);
+    const count = tutors.length;
 
+    if (endIndex < count) {
+        pagination.next = {
+            page: page + 1,
+            limit
+        };
+    }
+
+    if (startIndex > 0) {
+        pagination.prev = {
+            page: page - 1,
+            limit
+        };
+    }
 
 
     res.status(200).json({
         success: true,
-        length: tutors.length,
-        data: tutors
+        data: {
+            count,
+            pagination,
+            results
+        }
     });
 });
 
@@ -202,3 +241,18 @@ exports.updateTutor = asyncHandler(async (req, res, next) => {
 //         $unwind: '$specialization'
 //     }
 // ]
+
+
+// if (req.query.paymentPerHour.gte)
+// req.query.paymentPerHour.gte = parseInt(req.query.paymentPerHour.gte);
+
+// when user loop es6, can't point the same memory
+// console.log(typeof (tags[0]), typeof (mongoose.Types.ObjectId('5df3a6a8a0a5d03dac29e3c1')));
+
+// {
+//     $facet: {
+//         totalCount: [{
+//             $count: 'count'
+//         }]
+//     }
+// },

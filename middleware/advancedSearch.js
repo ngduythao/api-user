@@ -7,7 +7,7 @@ const advancedSearch = (model, populate) => async (req, res, next) => {
         ...req.query
     };
 
-    const removeFields = ['address', 'limit', 'page', 'select', 'sort'];
+    const removeFields = ['limit', 'page', 'select', 'sort'];
 
     removeFields.forEach(param => delete reqQuery[param]);
 
@@ -55,9 +55,9 @@ const advancedSearch = (model, populate) => async (req, res, next) => {
         return next(new createError(404, 'Resource not found'));
     }
 
-    if (req.query.address) {
-        results = results.filter(result => result.userInfo.address.includes(req.query.address));
-    }
+    // if (req.query.address) {
+    //     results = results.filter(result => result.userInfo.address.includes(req.query.address));
+    // }
 
     // this is if location is object, populate property then find
     // results = results.filter(result =>
