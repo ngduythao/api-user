@@ -9,6 +9,7 @@ const {
 
 const {
     getTutors,
+    getTutor,
     updateTutor
 } = require('../controllers/tutor');
 
@@ -18,5 +19,8 @@ router
     .get(getTutors)
     .put(protected, authorized('tutor'), updateTutor);
 
+router
+    .route('/:id')
+    .get(getTutor)
 
 module.exports = router;
