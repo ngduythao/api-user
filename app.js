@@ -28,6 +28,8 @@ const authRouter = require('./routes/auth');
 const tutorsRouter = require('./routes/tutors');
 const tagsRouter = require('./routes/tag');
 const specializationsRouter = require('./routes/specialization');
+const contractRouter = require('./routes/contract');
+
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -43,6 +45,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/tutors', tutorsRouter);
 app.use('/api/tags', tagsRouter);
 app.use('/api/specializations', specializationsRouter);
+app.use('/api/contracts', contractRouter);
 app.use(errorHandler);
 
 module.exports = app;

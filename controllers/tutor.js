@@ -187,6 +187,9 @@ exports.getTutor = asyncHandler(async (req, res, next) => {
             }
         ])
 
+    if (!tutor || !tutor.userInfo) {
+        return next (new createError(404, 'Tutor not found or has been locked'));
+    }
 
     res.status(200).json({
         success: true,

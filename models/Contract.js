@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const constants = require('../constants/constant');
 
 const {
-    Processing,
+    Requesting,
+    Happening,
     Completed,
     Complaining,
     Canceled
@@ -15,12 +16,12 @@ const ContractSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please fill in a title for the contract']
     },
-    tutor:{
+    tutor: {
         type: mongoose.Schema.ObjectId,
         ref: 'Tutor',
         required: [true, 'Please choose tutor']
     },
-    student:{
+    student: {
         type: mongoose.Schema.ObjectId,
         ref: 'Student',
         required: [true, 'Please choose student']
@@ -28,9 +29,9 @@ const ContractSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: [Processing, Completed, Complaining, Canceled]
+        enum: [Requesting, Happening, Completed, Complaining, Canceled]
     },
-    rentHours:{
+    rentHours: {
         type: Number,
         required: [true, 'Please choose rent hours']
     },
@@ -43,13 +44,10 @@ const ContractSchema = new mongoose.Schema({
     rating: {
         type: Number,
         min: 1,
-        max: 10,
-        required: [true, 'Please add a rating between 1 to 10']
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
+        max: 10
+    }
+}, {
+    timestamps: true
 });
 
 module.exports = mongoose.model('Contract', ContractSchema);

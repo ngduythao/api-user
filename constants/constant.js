@@ -1,5 +1,6 @@
 const constants = {
-    Processing: "Processing",
+    Requesting: "Requesting",
+    Happening: "Happening",
     Complaining: "Complaining",
     Completed: "Completed",
     Canceled: "Canceled"
