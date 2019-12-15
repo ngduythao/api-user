@@ -8,7 +8,6 @@ const {
     Requesting,
     Happening,
     Completed,
-    Complaining,
     Canceled
 } = constants;
 
@@ -156,15 +155,12 @@ exports.getContract = asyncHandler(async (req, res, next) => {
         return next(new createError(404, `Contract not found`));
     }
 
-    
-
-    // check owner late
     // id => string, _id => objectId
     if (req.user.role === 'student' && contract.student.id !== req.user.id) {
-        return next(new createError(404, `You cant read contract of another user`));
+        return next(new createError(404, `You cant read a contract of another user`));
     } else
     if (req.user.role === 'tutor' && contract.tutor.id !== req.user.id) {
-        return next(new createError(404, `You cant read contract of another user`));
+        return next(new createError(404, `You cant read a  contract of another user`));
     }
 
     res.status(200).json({
@@ -175,17 +171,64 @@ exports.getContract = asyncHandler(async (req, res, next) => {
 
 
 exports.updateContract = asyncHandler(async (req, res, next) => {
-    const Contract = await Contract.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true
-    });
+    const {status, isSuccess, rating} = req.body;
+    const contract = await Contract.findById(req.params.id).populate(contractPipeline);
+    let isUpdated = false;
 
-    if (!Contract) {
-        return next(new createError(404, `Contract not found`));
+    if (!contract) {
+        return next(new createError(404, `'Not found contract with id ${req.params.id} `));
     }
+
+    if (contract.status === Canceled) {
+        return next(new createError(403, `Contract has been canceled, you cant update`));
+    }
+
+    /* tutor */
+    if (req.user.role === 'tutor') {
+        if (contract.tutor.id !== req.user.id) {
+            return next(new createError(404, `You cant update a contract of another user`));
+        }
+
+        if (contract.status !== Requesting || !status || (status && status !== Happening && status !== Canceled)) {
+                return next(new createError(403, 'Status of contract invalid, cant update'));
+        }    
+
+        contract.status = status;
+        isUpdated = true;
+    } else
+    if (req.user.role === 'student') {
+        if (contract.student.id !== req.user.id) {
+            return next(new createError(404, `You cant update a contract of another user`));
+        }
+
+        // if exists status in req.body and status is neither Completed nor Canceled
+        if (status && status !== Completed && status !== Canceled) {
+            return next(new createError(403, 'Status of contract invalid, cant update'));
+        }
+
+        // status is Requesting && update Canceled
+        if (contract.status === Requesting && status === Canceled) {
+            contract.status = Canceled;
+            isUpdated = true;
+        } else
+        if ((contract.status === Happening && status === Completed)    // completed and give review
+            || contract.status === Completed) { // give review after completed
+                if (req.body.isSuccess) contract.isSuccess = isSuccess;
+                if (req.body.rating) contract.rating = parseInt(rating, 5);
+                contract.status = Completed;
+                isUpdated = true;
+        }
+
+        if(!isUpdated) {
+            return next(new createError(403, `Invalid request, you cant not update contract`));
+        }
+    }
+
+    await contract.save();
 
     res.status(200).json({
         success: true,
-        data: Contract
+        data: contract
     });
+
 });
