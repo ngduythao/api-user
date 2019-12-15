@@ -100,8 +100,23 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
         {
             $lookup: {
                 from: 'tags',
-                localField: 'tags',
-                foreignField: '_id',
+                //localField: 'tags',
+                //foreignField: '_id',
+                let: {'tagId': '$tags'},
+                pipeline: [
+                    { $match: {
+                         $expr: {
+                             $and: [
+                                 {
+                                     $in: ['$_id', '$$tagId']
+                                 },
+                                 {
+                                     $eq: ['$isActive', true]
+                                 }
+                             ]
+                         }
+                    }
+                }],
                 as: 'tags'
             }
         },
