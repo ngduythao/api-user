@@ -12,11 +12,45 @@ const {
     Canceled
 } = constants;
 
+const contractPipeline = [{
+        path: 'tutor',
+        populate: [{
+            path: 'userInfo',
+            select: '-password',
+            match: {
+                isActive: true
+            }
+        }, {
+            path: 'tags',
+            select: 'name',
+            match: {
+                isActive: true
+            }
+        }, {
+            path: 'specialization',
+            select: 'name',
+            match: {
+                isActive: true
+            }
+        }]
+    },
+    {
+        path: 'student',
+        populate: {
+            path: 'userInfo',
+            select: '-password',
+        }
+    }
+]
+
+
+
 exports.getContracts = asyncHandler(async (req, res, next) => {
-    const condition = {}
+    const condition = {};
     if (req.user.role === 'student') {
         condition['student'] = req.user.id;
-    } else if (req.user.role === 'tutor') {
+    } else 
+    if (req.user.role === 'tutor') {
         condition['tutor'] = req.user.id;
     }
 
@@ -29,36 +63,7 @@ exports.getContracts = asyncHandler(async (req, res, next) => {
     const endIndex = page * limit;
 
     let query = Contract.find(condition);
-    query = query.skip(startIndex).limit(limit).populate([{
-            path: 'tutor',
-            populate: [{
-                path: 'userInfo',
-                select: '-password',
-                match: {
-                    isActive: true
-                }
-            }, {
-                path: 'tags',
-                select: 'name',
-                match: {
-                    isActive: true
-                }
-            }, {
-                path: 'specialization',
-                select: 'name',
-                match: {
-                    isActive: true
-                }
-            }]
-        },
-        {
-            path: 'student',
-            populate: {
-                path: 'userInfo',
-                select: '-password',
-            }
-        }
-    ]);
+    query = query.skip(startIndex).limit(limit).populate(contractPipeline);
 
     try {
         results = await query;
@@ -133,37 +138,7 @@ exports.createContract = asyncHandler(async (req, res, next) => {
         return next(404, 'Init a new contract fail');
     }
 
-    const fullContract = await Contract.findById(contract._id).populate([
-        {
-            path: 'tutor',
-            populate: [{
-                path: 'userInfo',
-                select: '-password',
-                match: {
-                    isActive: true
-                }
-            }, {
-                path: 'tags',
-                select: 'name',
-                match: {
-                    isActive: true
-                }
-            }, {
-                path: 'specialization',
-                select: 'name',
-                match: {
-                    isActive: true
-                }
-            }]
-        },
-        {
-            path: 'student',
-            populate: {
-                path: 'userInfo',
-                select: '-password',
-            }
-        }
-    ]);
+    const fullContract = await Contract.findById(contract._id).populate(contractPipeline);
 
 
     res.status(200).json({
@@ -175,42 +150,22 @@ exports.createContract = asyncHandler(async (req, res, next) => {
 
 
 exports.getContract = asyncHandler(async (req, res, next) => {
-    const contract = await Contract.findById(req.params.id).populate([{
-            path: 'tutor',
-            populate: [{
-                path: 'userInfo',
-                select: '-password',
-                match: {
-                    isActive: true
-                }
-            }, {
-                path: 'tags',
-                select: 'name',
-                match: {
-                    isActive: true
-                }
-            }, {
-                path: 'specialization',
-                select: 'name',
-                match: {
-                    isActive: true
-                }
-            }]
-        },
-        {
-            path: 'student',
-            populate: {
-                path: 'userInfo',
-                select: '-password',
-            }
-        }
-    ]);
+    const contract = await Contract.findById(req.params.id).populate(contractPipeline);
 
     if (!contract) {
         return next(new createError(404, `Contract not found`));
     }
 
+    
+
     // check owner late
+    // id => string, _id => objectId
+    if (req.user.role === 'student' && contract.student.id !== req.user.id) {
+        return next(new createError(404, `You cant read contract of another user`));
+    } else
+    if (req.user.role === 'tutor' && contract.tutor.id !== req.user.id) {
+        return next(new createError(404, `You cant read contract of another user`));
+    }
 
     res.status(200).json({
         success: true,
