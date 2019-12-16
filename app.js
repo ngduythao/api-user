@@ -30,6 +30,7 @@ const tagsRouter = require('./routes/tag');
 const specializationsRouter = require('./routes/specialization');
 const contractRouter = require('./routes/contract');
 const complaintRouter = require('./routes/complaint');
+const statisticRouter = require('./routes/statistics');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -47,6 +48,7 @@ app.use('/api/tags', tagsRouter);
 app.use('/api/specializations', specializationsRouter);
 app.use('/api/contracts', contractRouter);
 app.use('/api/complaints', complaintRouter);
+app.use('/api/statistics', statisticRouter);
 app.use(errorHandler);
 
 module.exports = app;

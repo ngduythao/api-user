@@ -321,7 +321,7 @@ exports.updateTutor = asyncHandler(async (req, res, next) => {
 
 
 
-// @route     GET /api/tutors/:idTutor/statistics
+// @route     GET /api/statistics/contracts
 // @access    Private
 // @note      Get statistics amount of tutor is logged in
 exports.getStatistics = asyncHandler(async (req, res, next) => {

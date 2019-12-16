@@ -8,24 +8,11 @@ const {
 
 
 const {
-    getTutors,
-    getTutor,
-    updateTutor,
     getStatistics
 } = require('../controllers/tutor');
 
-
 router
-    .route('/')
-    .get(getTutors)
-    .put(protected, authorized('tutor'), updateTutor);
-
-router
-    .route('/:id')
-    .get(getTutor)
-
-router
-    .route('/statistics')
+    .route('/contracts')
     .get(protected, authorized('tutor'), getStatistics)
 
 module.exports = router;
