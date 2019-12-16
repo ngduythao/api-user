@@ -8,7 +8,7 @@ const protectedGetMe = (req, res, next) => {
         session: false,
     }, async (error, jwtPayload) => {
         if (error || !jwtPayload) {
-            return next(new createError(401, 'Please sign in to continue'));
+            return next(new createError(401, 'Token is invalid, please login again to continue'));
         }
 
         let user;
@@ -49,7 +49,7 @@ const protected = (req, res, next) => {
         session: false,
     }, async (error, jwtPayload) => {
         if (error || !jwtPayload) {
-            return next(new createError(401, 'Please sign in to continue'));
+            return next(new createError(401, 'Token is missing or invalid, please login again to continue'));
         }
 
         console.log('in protected jwtPaylod');

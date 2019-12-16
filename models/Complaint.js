@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const constants = require('../constants/constant');
 
 const {
-    Processing, Completed, Complaining, Canceled
+    Processing, Completed, Canceled
 } = constants;
 
 
@@ -19,7 +19,7 @@ const ComplaintSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: [Processing, Completed, Complaining, Canceled]
+        enum: [Processing, Completed, Canceled]
     },
     description: {
         type: String,
