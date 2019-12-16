@@ -98,13 +98,13 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
             $lookup: {
                 from: 'tags',
                 let: {
-                    'tagId': '$tags'
+                    'tagIds': '$tags'
                 },
                 pipeline: [{
                     $match: {
                         $expr: {
                             $and: [{
-                                    $in: ['$_id', '$$tagId']
+                                    $in: ['$_id', '$$tagIds']
                                 },
                                 {
                                     $eq: ['$isActive', true]
@@ -125,7 +125,80 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
             }
         },
         {
-            $unwind: '$specialization'
+            $unwind: 
+                {
+                    path: '$specialization',
+                    preserveNullAndEmptyArrays: true
+                } 
+        },
+        {
+            $lookup: {
+                from: 'contracts',
+                localField: '_id',
+                foreignField: 'tutor',
+                as: 'histories'
+            }
+        },
+        {
+            $unwind: 
+            {
+                path: '$histories',
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: 'students',
+                localField: 'histories.student',
+                foreignField: '_id',
+                as: 'histories.student'
+            }
+        },
+        {
+            $unwind:{ 
+                path: '$histories.student',
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'histories.student.userInfo',
+                foreignField: '_id',
+                as: 'histories.student.userInfo'
+            }
+        },
+        {
+            $unwind: 
+            { 
+                path: '$histories.student.userInfo',
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $group: {
+                _id: '$_id',
+                userInfo: {
+                    $first: '$userInfo'
+                },
+                averageRating: {
+                    $first:'$averageRating'
+                },
+                paymentPerHour: {
+                    $first: '$paymentPerHour'
+                },
+                selfIntro: {
+                    $first: '$selfIntro'
+                },
+                successRate: {
+                    $first: '$successRate'
+                },
+                specialization: {
+                    $first: '$specialization'
+                },
+                tags: {$first: '$tags'},
+                histories: {'$push': '$histories'}
+            }
         }
     ]
 
@@ -183,6 +256,15 @@ exports.getTutor = asyncHandler(async (req, res, next) => {
                 select: 'name',
                 match: {
                     isActive: true
+                }
+            },
+            {
+                path: 'histories',
+                populate: {
+                    path: 'student',
+                    populate: {
+                        path: 'userInfo'
+                    }
                 }
             }
         ])
