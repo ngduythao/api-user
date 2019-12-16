@@ -10,7 +10,8 @@ const {
 const {
     getTutors,
     getTutor,
-    updateTutor
+    updateTutor,
+    getStatistics
 } = require('../controllers/tutor');
 
 
@@ -22,5 +23,9 @@ router
 router
     .route('/:id')
     .get(getTutor)
+
+router
+    .route('/:id/statistics')
+    .get(protected, authorized('tutor'), getStatistics)
 
 module.exports = router;

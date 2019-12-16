@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const createError = require('http-errors');
 const asyncHandler = require('../middleware/async');
 const Tutor = require('../models/Tutor');
-
+const Contract = require('../models/Contract');
 
 // @route     GET /api/tutors
 // @access    Public
@@ -316,5 +316,39 @@ exports.updateTutor = asyncHandler(async (req, res, next) => {
     res.status(200).json({
         success: true,
         data: user
+    });
+});
+
+
+
+// @route     GET /api/tutors/:idTutor/statistics
+// @access    Private
+// @note      Get statistics amount of tutor is logged in
+exports.getStatistics = asyncHandler(async (req, res, next) => {
+    if (req.user.role === 'student') {
+        return next(new createError(403,'You can not authorize to access this page'));
+    }
+
+    const contracts = await Contract.aggregate([
+        {
+            $match: {
+                tutor: mongoose.Types.ObjectId(req.user.id)
+            }
+        },
+        {
+            $group: {
+                _id: '$status',
+                numberOfContracts: {$sum: 1},
+                totalAmount: {
+                    $sum: '$contractAmount'
+                }
+            }
+        }
+    ]);
+
+
+    res.status(200).json({
+        success: true,
+        data: contracts
     });
 });
