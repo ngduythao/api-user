@@ -25,6 +25,8 @@ const ComplaintSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add some text in description']
     }
+}, {
+    timestamps: true
 });
 
 module.exports = mongoose.model('Complaint', ComplaintSchema);
