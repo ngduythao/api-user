@@ -29,6 +29,9 @@ const importData = async () => {
             successRate: 0.9,
             averageRating: 4.7
         });
+        await User.updateMany({}, {
+            balance: 1000
+        })
         console.log('Data Imported...'.green.inverse);
     } catch (error) {
         console.log(error);

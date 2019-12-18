@@ -112,7 +112,7 @@ exports.login = (req, res, next) => {
           }
           fullUser.userId = user.id;
           fullUser.role = user.role;
-
+          fullUser.balance = user.balance;
           sendTokenResponse(200, res, fullUser);
 })(req, res)};
 
@@ -256,17 +256,17 @@ exports.updateForgotPassword = asyncHandler(async (req, res, next) => {
   }
   fullUser.userId = user.id;
   fullUser.role = user.role;
-
+  fullUser.balance = user.balance;
   sendTokenResponse(200, res, fullUser);
 });
 
 
 const sendTokenResponse = (statusCode, res, user) => {
-  console.log(user);
   const payload = {
     id: user.id,
     userId: user.userId,
-    role: user.role
+    role: user.role,
+    balance: user.balance
   }
 
   console.log(payload);

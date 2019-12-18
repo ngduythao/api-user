@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const asyncHandler = require('../middleware/async');
 const Contract = require('../models/Contract');
+const User = require('../models/User');
 const Tutor = require('../models/Tutor');
 const constants = require('../constants/constant');
 
@@ -123,7 +124,9 @@ exports.createContract = asyncHandler(async (req, res, next) => {
 
     req.body.status = Requesting;
     req.body.contractAmount = req.body.rentHours * tutor.paymentPerHour;
-
+    if (req.user.balance < req.body.contractAmount) {
+        return next(new createError(400, 'Account balance is not enough, please recharge money to the wallet, then create contract again. Thank you!'));
+    }
 
     const contract = await Contract.create(req.body)
 
@@ -204,14 +207,22 @@ exports.updateContract = asyncHandler(async (req, res, next) => {
         if (contract.status === Requesting && status === Canceled) {
             contract.status = Canceled;
             isUpdated = true;
-        } else
-        if ((contract.status === Happening && status === Completed)    // completed and give review
-            || contract.status === Completed) { // give review after completed
+        } else // completed and give review
+        if (contract.status === Happening && status === Completed) { 
+                contract.status = Completed;
+                const user = await User.findById(contract.tutor.userInfo._id);
+                await user.save();
+                user.balance += contract.contractAmount;
                 if (req.body.isSuccess) contract.isSuccess = isSuccess;
                 if (req.body.rating) contract.rating = parseInt(rating, 10);
                 if (req.body.review) contract.review = review;
-                contract.status = Completed;
                 isUpdated = true;
+        } else // give review after completed
+        if (contract.status === Completed) {
+            if (req.body.isSuccess) contract.isSuccess = isSuccess;
+            if (req.body.rating) contract.rating = parseInt(rating, 10);
+            if (req.body.review) contract.review = review;
+            isUpdated = true;
         }
 
         if(!isUpdated) {

@@ -40,11 +40,11 @@ const pipelineTutor = [{
 // @route     GET /api/tutors
 // @access    Public
 exports.getTutors = asyncHandler(async (req, res, next) => {
-    // const page = parseInt(req.query.page, 10) || 1;
-    // const limit = parseInt(req.query.limit, 10) || 8;
-    // const startIndex = (page - 1) * limit;
-    // const endIndex = page * limit;
-    // const pagination = {};
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 8;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const pagination = {};
     const matchObject = {};
     const sortObject = {};
     
@@ -227,40 +227,41 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
         }, {
             $sort: sortObject
         },
-        // {
-        //     $skip: startIndex,
-        // },
-        // {
-        //     $limit: limit
-        // },
+        {
+            $skip: startIndex,
+        },
+        {
+            $limit: limit
+        },
     ]
 
     const pipeline = [...pipelineSearch, ...pipelinePopulate];
     const results = await Tutor.aggregate(pipeline);
 
-    // const tutors = await Tutor.aggregate(pipelineSearch);
-    // const count = tutors.length;
+    const tutors = await Tutor.aggregate(pipelineSearch);
+    const count = tutors.length;
 
-    // if (endIndex < count) {
-    //     pagination.next = {
-    //         page: page + 1,
-    //         limit
-    //     };
-    // }
+    if (endIndex < count) {
+        pagination.next = {
+            page: page + 1,
+            limit
+        };
+    }
 
-    // if (startIndex > 0) {
-    //     pagination.prev = {
-    //         page: page - 1,
-    //         limit
-    //     };
-    // }
+    if (startIndex > 0) {
+        pagination.prev = {
+            page: page - 1,
+            limit
+        };
+    }
 
 
     res.status(200).json({
         success: true,
         data: {
-            count: results.length,
-            // pagination,
+            // count: results.length,
+            count,
+            pagination,
             results
         }
     });
