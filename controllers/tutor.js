@@ -4,6 +4,39 @@ const asyncHandler = require('../middleware/async');
 const Tutor = require('../models/Tutor');
 const Contract = require('../models/Contract');
 
+
+const pipelineTutor = [{
+        path: 'userInfo',
+        select: '-password',
+        match: {
+            isActive: true
+        }
+    },
+    {
+        path: 'tags',
+        match: {
+            isActive: true
+        }
+    },
+    {
+        path: 'specialization',
+        select: 'name',
+        match: {
+            isActive: true
+        }
+    },
+    {
+        path: 'histories',
+        populate: {
+            path: 'student',
+            populate: {
+                path: 'userInfo'
+            }
+        }
+    }
+]
+
+
 // @route     GET /api/tutors
 // @access    Public
 exports.getTutors = asyncHandler(async (req, res, next) => {
@@ -239,36 +272,7 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
 exports.getTopTutors = asyncHandler(async (req, res, next) => {
     const results = await Tutor.find()
                     .sort({rating: -1}).limit(5)
-                    .populate([{
-                            path: 'userInfo',
-                            select: '-password',
-                            match: {
-                                isActive: true
-                            }
-                        },
-                        {
-                            path: 'tags',
-                            match: {
-                                isActive: true
-                            }
-                        },
-                        {
-                            path: 'specialization',
-                            select: 'name',
-                            match: {
-                                isActive: true
-                            }
-                        },
-                        {
-                            path: 'histories',
-                            populate: {
-                                path: 'student',
-                                populate: {
-                                    path: 'userInfo'
-                                }
-                            }
-                        }
-                    ]);
+                    .populate(pipelineTutor);
                     
     res.status(200).json({
         success: true,
@@ -283,36 +287,7 @@ exports.getTopTutors = asyncHandler(async (req, res, next) => {
 // @access    Public
 exports.getTutor = asyncHandler(async (req, res, next) => {
     const tutor = await Tutor.findById(req.params.id)
-        .populate([{
-                path: 'userInfo',
-                select: '-password',
-                match: {
-                    isActive: true
-                }
-            },
-            {
-                path: 'tags',
-                match: {
-                    isActive: true
-                }
-            },
-            {
-                path: 'specialization',
-                select: 'name',
-                match: {
-                    isActive: true
-                }
-            },
-            {
-                path: 'histories',
-                populate: {
-                    path: 'student',
-                    populate: {
-                        path: 'userInfo'
-                    }
-                }
-            }
-        ])
+        .populate(pipelineTutor)
 
     if (!tutor || !tutor.userInfo) {
         return next (new createError(404, 'Tutor not found or has been locked'));

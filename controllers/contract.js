@@ -43,7 +43,6 @@ const contractPipeline = [{
 ]
 
 
-
 exports.getContracts = asyncHandler(async (req, res, next) => {
     const condition = {};
     if (req.user.role === 'student') {
@@ -166,7 +165,7 @@ exports.getContract = asyncHandler(async (req, res, next) => {
 
 
 exports.updateContract = asyncHandler(async (req, res, next) => {
-    const {status, isSuccess, rating} = req.body;
+    const {status, isSuccess, rating, review} = req.body;
     const contract = await Contract.findById(req.params.id).populate(contractPipeline);
     let isUpdated = false;
 
@@ -209,7 +208,8 @@ exports.updateContract = asyncHandler(async (req, res, next) => {
         if ((contract.status === Happening && status === Completed)    // completed and give review
             || contract.status === Completed) { // give review after completed
                 if (req.body.isSuccess) contract.isSuccess = isSuccess;
-                if (req.body.rating) contract.rating = parseInt(rating, 5);
+                if (req.body.rating) contract.rating = parseInt(rating, 10);
+                if (req.body.review) contract.review = review;
                 contract.status = Completed;
                 isUpdated = true;
         }
