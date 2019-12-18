@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 const {
+    getComplaints,
     createComplaint,
+    getComplaint,
     cancelComplaint
 } = require('../controllers/complaint');
 
@@ -11,11 +13,14 @@ const {
     authorized
 } = require('../middleware/auth');
 
+router.use(protected)
 
 router.route('/')
-    .post(protected, authorized('student'), createComplaint);
+    .get(getComplaints)
+    .post(authorized('student'), createComplaint);
 
 router.route('/:id')
-    .put(protected, cancelComplaint)
+    .get(getComplaint)
+    .put(cancelComplaint)
 
 module.exports = router;

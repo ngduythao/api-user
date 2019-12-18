@@ -1,4 +1,5 @@
 const createError = require('http-errors');
+const mongoose = require('mongoose');
 const asyncHandler = require('../middleware/async');
 const Contract = require('../models/Contract');
 const Complaint =  require('../models/Complaint');
@@ -56,6 +57,70 @@ exports.createComplaint = asyncHandler(async (req, res, next) => {
     });
 });
 
+
+exports.getComplaints = asyncHandler(async (req, res, next) => {
+    const condition = {};
+    let count;
+    if (req.user.role === 'student') {
+        condition['student'] = req.user.id;
+    } else
+    if (req.user.role === 'tutor') {
+        condition['tutor'] = req.user.id;
+    }
+
+    const contracts = await Contract.find(condition);
+    const arrayIds = contracts.map(contract => mongoose.Types.ObjectId(contract.id));
+
+    const pipeline = [{
+        $match: {
+            $expr: {
+                $in: ['$contract', arrayIds]
+            }
+        }
+    }];
+
+    try {
+        results = await Complaint.aggregate(pipeline);
+        count = results.length;
+    } catch (error) {
+        return next(new createError(404, 'Resource not found'));
+    }
+
+
+    res.status(200).json({
+        success: true,
+        data: {
+            count,
+            results
+        }
+    });
+});
+
+
+exports.getComplaint = asyncHandler(async(req, res, next) => {
+    let complaint = await Complaint.findById(req.params.id).populate('contract');
+
+    if (!complaint) {
+        return next(new createError(404, `Complaint not found`));
+    }
+
+    // id => string, _id => objectId
+    if (req.user.role === 'student' && complaint.contract.student.toString() !== req.user.id) {
+        return next(new createError(404, `You cant read a complaint of another user`));
+    } else
+    if (req.user.role === 'tutor' && complaint.contract.tutor.toString() !== req.user.id) {
+        return next(new createError(404, `You cant read a complaint of another user`));
+    }
+
+    const temp = complaint.contract.id;
+    complaint.contract = undefined;
+    complaint.contract = temp;
+    
+    res.status(200).json({
+        success: true,
+        data: complaint
+    });
+}) 
 
 exports.cancelComplaint = asyncHandler(async (req, res, next) => {
     if (req.user.role !== 'student') {

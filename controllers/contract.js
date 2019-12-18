@@ -56,13 +56,13 @@ exports.getContracts = asyncHandler(async (req, res, next) => {
     const contracts = await Contract.find(condition);
     const count = contracts.length;
 
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 8;
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
+    // const page = parseInt(req.query.page, 10) || 1;
+    // const limit = parseInt(req.query.limit, 10) || 8;
+    // const startIndex = (page - 1) * limit;
+    // const endIndex = page * limit;
 
-    let query = Contract.find(condition);
-    query = query.skip(startIndex).limit(limit).populate(contractPipeline);
+    let query = Contract.find(condition).populate(contractPipeline);
+    // query = query.skip(startIndex).limit(limit).populate(contractPipeline);
 
     try {
         results = await query;
@@ -70,33 +70,28 @@ exports.getContracts = asyncHandler(async (req, res, next) => {
         return next(new createError(404, 'Resource not found'));
     }
 
-    const pagination = {};
+    // const pagination = {};
 
-    if (endIndex < count) {
-        pagination.next = {
-            page: page + 1,
-            limit
-        };
-    }
+    // if (endIndex < count) {
+    //     pagination.next = {
+    //         page: page + 1,
+    //         limit
+    //     };
+    // }
 
-    if (startIndex > 0) {
-        pagination.prev = {
-            page: page - 1,
-            limit
-        };
-    }
+    // if (startIndex > 0) {
+    //     pagination.prev = {
+    //         page: page - 1,
+    //         limit
+    //     };
+    // }
 
-    res.advancedSearch = {
-        count: results.length,
-        pagination,
-        results
-    };
 
     res.status(200).json({
         success: true,
         data: {
             count,
-            pagination,
+            // pagination,
             results
         }
     });

@@ -45,6 +45,13 @@ const ContractSchema = new mongoose.Schema({
         type: Number,
         min: 1,
         max: 5
+    },
+    description: {
+        type: String,
+        required: [true, 'Please add some text to describe contract']
+    },
+    review: {
+        type: String
     }
 }, {
     timestamps: true

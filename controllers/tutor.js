@@ -7,13 +7,13 @@ const Contract = require('../models/Contract');
 // @route     GET /api/tutors
 // @access    Public
 exports.getTutors = asyncHandler(async (req, res, next) => {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 8;
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
+    // const page = parseInt(req.query.page, 10) || 1;
+    // const limit = parseInt(req.query.limit, 10) || 8;
+    // const startIndex = (page - 1) * limit;
+    // const endIndex = page * limit;
     const matchObject = {};
     const sortObject = {};
-    const pagination = {};
+    // const pagination = {};
 
     if (req.query.address) {
         matchObject['userInfo.address'] = {
@@ -61,7 +61,7 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
             else sortObject[s] = 1; // ascending            
         }
     } else {
-        sortObject['successRate'] = -1;
+        sortObject['userInfo.createdAt'] = -1;
     }
 
     // console.log(matchObject);
@@ -85,15 +85,13 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
     ]
 
 
-    const pipelinePopulate = [{
-            $sort: sortObject
-        },
-        {
-            $skip: startIndex,
-        },
-        {
-            $limit: limit
-        },
+    const pipelinePopulate = [
+        // {
+        //     $skip: startIndex,
+        // },
+        // {
+        //     $limit: limit
+        // },
         {
             $lookup: {
                 from: 'tags',
@@ -199,7 +197,9 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
                 tags: {$first: '$tags'},
                 histories: {'$push': '$histories'}
             }
-        }
+        }, {
+            $sort: sortObject
+        },
     ]
 
     const pipeline = [...pipelineSearch, ...pipelinePopulate];
@@ -208,26 +208,26 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
     const tutors = await Tutor.aggregate(pipelineSearch);
     const count = tutors.length;
 
-    if (endIndex < count) {
-        pagination.next = {
-            page: page + 1,
-            limit
-        };
-    }
+    // if (endIndex < count) {
+    //     pagination.next = {
+    //         page: page + 1,
+    //         limit
+    //     };
+    // }
 
-    if (startIndex > 0) {
-        pagination.prev = {
-            page: page - 1,
-            limit
-        };
-    }
+    // if (startIndex > 0) {
+    //     pagination.prev = {
+    //         page: page - 1,
+    //         limit
+    //     };
+    // }
 
 
     res.status(200).json({
         success: true,
         data: {
             count,
-            pagination,
+            // pagination,
             results
         }
     });
