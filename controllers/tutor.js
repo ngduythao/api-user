@@ -11,10 +11,10 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
     // const limit = parseInt(req.query.limit, 10) || 8;
     // const startIndex = (page - 1) * limit;
     // const endIndex = page * limit;
+    // const pagination = {};
     const matchObject = {};
     const sortObject = {};
-    // const pagination = {};
-
+    
     if (req.query.address) {
         matchObject['userInfo.address'] = {
             $regex: req.query.address,
@@ -86,12 +86,6 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
 
 
     const pipelinePopulate = [
-        // {
-        //     $skip: startIndex,
-        // },
-        // {
-        //     $limit: limit
-        // },
         {
             $lookup: {
                 from: 'tags',
@@ -200,13 +194,19 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
         }, {
             $sort: sortObject
         },
+        // {
+        //     $skip: startIndex,
+        // },
+        // {
+        //     $limit: limit
+        // },
     ]
 
     const pipeline = [...pipelineSearch, ...pipelinePopulate];
     const results = await Tutor.aggregate(pipeline);
 
-    const tutors = await Tutor.aggregate(pipelineSearch);
-    const count = tutors.length;
+    // const tutors = await Tutor.aggregate(pipelineSearch);
+    // const count = tutors.length;
 
     // if (endIndex < count) {
     //     pagination.next = {
@@ -226,8 +226,53 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
     res.status(200).json({
         success: true,
         data: {
-            count,
+            count: results.length,
             // pagination,
+            results
+        }
+    });
+});
+
+
+// @route     GET /api/tutors/top/rating
+// @access    Public
+exports.getTopTutors = asyncHandler(async (req, res, next) => {
+    const results = await Tutor.find()
+                    .sort({rating: -1}).limit(5)
+                    .populate([{
+                            path: 'userInfo',
+                            select: '-password',
+                            match: {
+                                isActive: true
+                            }
+                        },
+                        {
+                            path: 'tags',
+                            match: {
+                                isActive: true
+                            }
+                        },
+                        {
+                            path: 'specialization',
+                            select: 'name',
+                            match: {
+                                isActive: true
+                            }
+                        },
+                        {
+                            path: 'histories',
+                            populate: {
+                                path: 'student',
+                                populate: {
+                                    path: 'userInfo'
+                                }
+                            }
+                        }
+                    ]);
+                    
+    res.status(200).json({
+        success: true,
+        data: {
             results
         }
     });
