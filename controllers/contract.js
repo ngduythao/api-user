@@ -61,7 +61,9 @@ exports.getContracts = asyncHandler(async (req, res, next) => {
     // const startIndex = (page - 1) * limit;
     // const endIndex = page * limit;
 
-    let query = Contract.find(condition).populate(contractPipeline);
+    let query = Contract.find(condition).populate(contractPipeline).sort({
+        updatedAt: -1
+    });
     // query = query.skip(startIndex).limit(limit).populate(contractPipeline);
 
     try {
@@ -117,11 +119,7 @@ exports.createContract = asyncHandler(async (req, res, next) => {
         return next(new createError(403, 'Tutor not found or has been locked, init contract fail'));
     }
 
-
-    if (req.body.student !== req.user.id) {
-        return next(new createError(403, 'You cant init contract by a id of different student'));
-    }
-
+    req.body.student = req.user.id;
     req.body.status = Requesting;
     req.body.contractAmount = req.body.rentHours * tutor.paymentPerHour;
     if (req.user.balance < req.body.contractAmount) {
@@ -133,6 +131,11 @@ exports.createContract = asyncHandler(async (req, res, next) => {
     if (!contract) {
         return next(404, 'Init a new contract fail');
     }
+
+    // minus balance
+    const user = await User.findById(req.user.userId);
+    user.balance -= req.body.contractAmount;
+    await user.save();
 
     const fullContract = await Contract.findById(contract._id).populate(contractPipeline);
 
@@ -190,6 +193,14 @@ exports.updateContract = asyncHandler(async (req, res, next) => {
                 return next(new createError(403, 'Status of contract invalid, cant update'));
         }    
 
+        if (status === Canceled) {
+            // sent back money to student;
+            const user = await User.findById(contract.student.userInfo._id);
+            user.balance += contract.contractAmount;
+            contract.student.userInfo.balance += contract.contractAmount;
+            await user.save();
+        }
+
         contract.status = status;
         isUpdated = true;
     } else
@@ -205,14 +216,21 @@ exports.updateContract = asyncHandler(async (req, res, next) => {
 
         // status is Requesting && update Canceled
         if (contract.status === Requesting && status === Canceled) {
+            // sent back money to student;
+            const user = await User.findById(contract.student.userInfo._id);
+            user.balance += contract.contractAmount;
+            contract.student.userInfo.balance += contract.contractAmount;
+            await user.save();
             contract.status = Canceled;
             isUpdated = true;
         } else // completed and give review
         if (contract.status === Happening && status === Completed) { 
                 contract.status = Completed;
+                // sent money to tutor
                 const user = await User.findById(contract.tutor.userInfo._id);
-                await user.save();
                 user.balance += contract.contractAmount;
+                await user.save();
+                contract.tutor.userInfo.balance += contract.contractAmount;                
                 if (req.body.isSuccess) contract.isSuccess = isSuccess;
                 if (req.body.rating) contract.rating = parseInt(rating, 10);
                 if (req.body.review) contract.review = review;
