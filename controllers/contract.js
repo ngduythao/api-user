@@ -16,7 +16,7 @@ const contractPipeline = [{
         path: 'tutor',
         populate: [{
             path: 'userInfo',
-            select: '-password',
+            select: '-password -balance -accountToken',
             match: {
                 isActive: true
             }
@@ -38,7 +38,7 @@ const contractPipeline = [{
         path: 'student',
         populate: {
             path: 'userInfo',
-            select: '-password',
+            select: '-password -balance -accountToken',
         }
     }
 ]
@@ -197,7 +197,6 @@ exports.updateContract = asyncHandler(async (req, res, next) => {
             // sent back money to student;
             const user = await User.findById(contract.student.userInfo._id);
             user.balance += contract.contractAmount;
-            contract.student.userInfo.balance += contract.contractAmount;
             await user.save();
         }
 
@@ -219,7 +218,6 @@ exports.updateContract = asyncHandler(async (req, res, next) => {
             // sent back money to student;
             const user = await User.findById(contract.student.userInfo._id);
             user.balance += contract.contractAmount;
-            contract.student.userInfo.balance += contract.contractAmount;
             await user.save();
             contract.status = Canceled;
             isUpdated = true;
@@ -230,7 +228,6 @@ exports.updateContract = asyncHandler(async (req, res, next) => {
                 const user = await User.findById(contract.tutor.userInfo._id);
                 user.balance += contract.contractAmount;
                 await user.save();
-                contract.tutor.userInfo.balance += contract.contractAmount;                
                 if (req.body.isSuccess) contract.isSuccess = isSuccess;
                 if (req.body.rating) contract.rating = parseInt(rating, 10);
                 if (req.body.review) contract.review = review;
