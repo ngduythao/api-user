@@ -71,13 +71,20 @@ exports.getComplaints = asyncHandler(async (req, res, next) => {
     const contracts = await Contract.find(condition);
     const arrayIds = contracts.map(contract => mongoose.Types.ObjectId(contract.id));
 
-    const pipeline = [{
-        $match: {
-            $expr: {
-                $in: ['$contract', arrayIds]
+    const pipeline = [
+        {
+            $match: {
+                $expr: {
+                    $in: ['$contract', arrayIds]
+                }
             }
+        },
+        {
+             $sort: {
+                 updatedAt: -1
+             }
         }
-    }];
+    ];
 
     try {
         results = await Complaint.aggregate(pipeline);
