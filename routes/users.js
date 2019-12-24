@@ -6,6 +6,7 @@ const {protected, authorized} =require('../middleware/auth')
 const {
   updateUser,
   updatePassword,
+  updateImage,
   recharge
 } = require('../controllers/user');
 const {getSignedUrl} = require('../controllers/upload');
@@ -19,6 +20,10 @@ router
 router
   .route('/newpw')
   .put(updatePassword)
+
+router
+  .route('/newavatar')
+  .put(updateImage)
 
 router
   .route('/upload')

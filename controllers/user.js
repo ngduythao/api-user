@@ -33,6 +33,26 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
     });
 });
 
+
+exports.updateImage = asyncHandler(async (req, res, next) => {
+    let user = await User.findOne({
+        _id: req.user.userId,   // id of user, not full user
+        isActive: true
+    });
+
+    if (!user) {
+        return next(createError(404, 'User is lock or not exists'));
+    }
+    if (req.body.avatar) user.avatar = req.body.avatar;
+
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        data: user
+    });
+});
+
 exports.updatePassword = asyncHandler(async (req, res, next) => {
     const {
         currentPassword,
