@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const bcrypt = require('bcryptjs');
 const asyncHandler = require('../middleware/async');
 const User = require('../models/User');
+const stripe = require('stripe')(process.env.STRIPE_SK_KEY);
 
 
 exports.updateUser = asyncHandler(async (req, res, next) => {
@@ -64,3 +65,29 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
         data: user
     });
 });
+
+exports.recharge = asyncHandler(async(req, res) => {
+    const { token, price } = req.body;
+    const customer = await stripe.customers.create({
+        email: token.email,
+        source: token.id
+    })
+
+    const charge = await stripe.charges.create({
+        amount: price * 100,
+        currency: 'usd',
+        description: 'Advanced Web Recharge',
+        customer: customer.id
+    })
+
+    const user = await User.findById(req.user.userId);
+    user.balance += price;
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        message: 'Recharge successfully'
+    });
+});
+
+

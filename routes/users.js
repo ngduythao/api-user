@@ -5,7 +5,8 @@ const {protected, authorized} =require('../middleware/auth')
 
 const {
   updateUser,
-  updatePassword
+  updatePassword,
+  recharge
 } = require('../controllers/user');
 const {getSignedUrl} = require('../controllers/upload');
 
@@ -23,5 +24,8 @@ router
   .route('/upload')
   .post(getSignedUrl);
 
+router
+  .route('/recharge')
+  .post(recharge);
 
 module.exports = router;
