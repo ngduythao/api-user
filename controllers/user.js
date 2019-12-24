@@ -67,7 +67,8 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
 });
 
 exports.recharge = asyncHandler(async(req, res) => {
-    const { token, price } = req.body;
+    let { token, price } = req.body;
+    price = parseInt(price, 10);
     const customer = await stripe.customers.create({
         email: token.email,
         source: token.id
