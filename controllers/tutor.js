@@ -90,13 +90,13 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
     if (req.query.sort) {
         const sorts = req.query.sort.split(',');
         for (let s of sorts) {
-            if (s[0] === '-') sortObject[s] = -1; // descending
+            if (s[0] === '-') sortObject[s.substr(1)] = -1; // descending
             else sortObject[s] = 1; // ascending            
         }
     } else {
         sortObject['userInfo.createdAt'] = -1;
     }
-
+    // console.log(sortObject);
     // console.log(matchObject);
 
     const pipelineSearch = [{
