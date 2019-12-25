@@ -20,10 +20,9 @@ const ChatSchema = new mongoose.Schema({
             time: {
                 type: Date
             },
-            from: {
-                type: String,
-                enum: ['student', 'tutor']
-            },
+            author: {
+                type: mongoose.Schema.ObjectId
+            }
         }
     ]
 }, {

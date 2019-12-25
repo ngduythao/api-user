@@ -100,10 +100,9 @@ exports.sendMessage = asyncHandler(async (req, res, next) => {
     const newMessage = {
         content: message,
         time: new Date(),
-        from: req.user.role
+        author: req.user.userId
     }
     room.messages.push(newMessage);
-    console.log(newMessage)
     await room.save();
 
     res.status(200).json({
