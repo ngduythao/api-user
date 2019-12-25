@@ -9,7 +9,8 @@ io.on('connection', (socket) => {
     /* Join room */
     socket.on('join-room', (roomId) => {
         console.log(`Has joined room ${roomId}`);
-        socket.join(room.id)
+        socket.join(roomId);
+        socket.emit('server-say-helo', 'Hello from server');
         // socket.roomId = room.id;
     })
     /******************* CHAT *******************/
