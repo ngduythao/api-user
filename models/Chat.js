@@ -14,10 +14,10 @@ const ChatSchema = new mongoose.Schema({
     },
     messages: [
         {
-            content: {
+            message: {
                 type: String
             },
-            time: {
+            timestamp: {
                 type: Date
             },
             author: {

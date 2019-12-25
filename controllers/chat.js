@@ -98,8 +98,8 @@ exports.sendMessage = asyncHandler(async (req, res, next) => {
     const { message } = req.body;
     const room = await Chat.findById(req.params.id);
     const newMessage = {
-        content: message,
-        time: new Date(),
+        message,
+        timestamp: new Date(),
         author: req.user.userId
     }
     room.messages.push(newMessage);
