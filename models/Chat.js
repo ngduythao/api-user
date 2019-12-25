@@ -12,10 +12,20 @@ const ChatSchema = new mongoose.Schema({
         ref: 'Student',
         required: [true, 'Please choose the student']
     },
-    messages: {
-        type: [String],
-        required: [true, 'Please add some text']
-    }
+    messages: [
+        {
+            content: {
+                type: String
+            },
+            time: {
+                type: Date
+            },
+            from: {
+                type: String,
+                enum: ['student', 'tutor']
+            },
+        }
+    ]
 }, {
     timestamps: true
 });
