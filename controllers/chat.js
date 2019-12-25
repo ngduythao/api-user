@@ -36,7 +36,7 @@ exports.createRoom = asyncHandler(async (req, res, next) => {
         tutor: req.body.tutor,
         student: req.user.id
     }
-    const existingRoom = await Chat.find(roomInfo);
+    const existingRoom = await Chat.findOne(roomInfo);
     if (existingRoom) {
         return next(new createError(400, `You had created chat room with this tutor`));
     }
