@@ -112,7 +112,7 @@ exports.recharge = asyncHandler(async(req, res) => {
 
     res.status(200).json({
         success: true,
-        message: 'Recharge successfully'
+        message: 'Payment successfully'
     });
 });
 
