@@ -89,6 +89,11 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
 exports.recharge = asyncHandler(async(req, res) => {
     let { token, price } = req.body;
     price = parseInt(price, 10);
+    const user = await User.findById(req.user.userId);
+    if (user.role === 'tutor' && user.balance > price) {
+        return next(createError(400, 'You cant withdraw money largher than your balance'));
+    }
+    
     const customer = await stripe.customers.create({
         email: token.email,
         source: token.id
@@ -101,7 +106,6 @@ exports.recharge = asyncHandler(async(req, res) => {
         customer: customer.id
     })
 
-    const user = await User.findById(req.user.userId);
     if (user.role === 'student') {
         user.balance += price;
     } else
