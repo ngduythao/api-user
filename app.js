@@ -9,16 +9,29 @@ const passportConfig = require('./middleware/passport');
 const errorHandler = require('./middleware/error');
 const cors = require('cors')
 
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const authRouter = require('./routes/auth');
-const tutorRoute = require('./routes/tutors');
-
 const app = express();
 app.use(cors());
 connectDB();
 passportConfig();
 
+require('./models/Complaint');
+require('./models/Contract');
+require('./models/Specialization');
+require('./models/Student');
+require('./models/Tag');
+require('./models/Tutor');
+require('./models/User');
+
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const authRouter = require('./routes/auth');
+const tutorsRouter = require('./routes/tutors');
+const tagsRouter = require('./routes/tag');
+const specializationsRouter = require('./routes/specialization');
+const contractRouter = require('./routes/contract');
+const complaintRouter = require('./routes/complaint');
+const statisticRouter = require('./routes/statistics');
+const chatRouter = require('./routes/chat');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -31,7 +44,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/auth', authRouter);
-app.use('/api/tutors', tutorRoute);
+app.use('/api/tutors', tutorsRouter);
+app.use('/api/tags', tagsRouter);
+app.use('/api/specializations', specializationsRouter);
+app.use('/api/contracts', contractRouter);
+app.use('/api/complaints', complaintRouter);
+app.use('/api/statistics', statisticRouter);
+app.use('/api/chats', chatRouter);
 app.use(errorHandler);
 
 module.exports = app;
+
+// https://exceptionshub.com/missingschemaerror-schema-hasnt-been-registered-for-model-user.html

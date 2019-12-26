@@ -21,7 +21,7 @@ exports.register = asyncHandler(async (req, res, next) => {
   let user, student, tutor;
 
   user = await User.findOne({email: email});
-  if (user) return next(new createError(400, 'Tài khoản đã tồn tại'));
+  if (user) return next(new createError(401, 'Account is already existed'));
 
   const accountToken = await crypto.randomBytes(32).toString('hex');
   const salt = await bcrypt.genSalt(10);
@@ -48,8 +48,8 @@ exports.register = asyncHandler(async (req, res, next) => {
   const msg = {
     to: email,
     from: process.env.HOST_EMAIL,
-    subject: 'Kích hoạt tài khoản Uber for tutor',
-    html: `<p> Chào mừng bạn đến với Uber for tutor. \nBạn vui lòng nhấn vào đường dẫn sau <a href="${process.env.SERVER_URL}/api/auth/active/${accountToken}"> để kích hoạt tài khoản </a>.</p> `
+    subject: 'Active account Uber for tutor',
+    html: `<p> Welcome to Uber for tutor. \nPlease click to this link <a href="${process.env.SERVER_URL}/api/auth/active/${accountToken}"> to active your account </a>.</p> `
   }
 
   try {
@@ -57,14 +57,14 @@ exports.register = asyncHandler(async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: {
-        message: 'Chúng tôi đã gửi một đường dẫn kích hoạt tài khoản đến địa chỉ email của bạn'
+        message: 'We has sent active link to your email'
       }
     });
   } catch (error) {
     if (role === 'student')  await Student.deleteOne(student);
     else if (role === 'tutor')  await Tutor.deleteOne(tutor);
     await User.deleteOne(user);
-    return next(new createError(400, 'Server bị lỗi, không thể gửi email'));
+    return next(new createError(400, 'Server error, cant send email'));
   }
 });
 
@@ -77,7 +77,7 @@ exports.activeUser = asyncHandler(async(req, res, next) => {
   
   const user = await User.findOne({accountToken: token});
 
-  if (!user) return next(new createError(400, 'Token không hợp lệ'));
+  if (!user) return next(new createError(400, 'Token invalid'));
 
   // update
   user.isActive = true;
@@ -97,11 +97,23 @@ exports.activeUser = asyncHandler(async(req, res, next) => {
 // @route     POST /api/auth/login
 // @access    Public
 exports.login = (req, res, next) => {
-    passport.authenticate('local', {session: false}, (errMessage, user) => {
-      if (errMessage || !user) {
-          return next(new createError(400, errMessage));
-        }
-      sendTokenResponse(200, res, user);
+    passport.authenticate('local', {session: false}, async (errMessage, user) => {
+          if (errMessage || !user) {
+            return next(new createError(400, errMessage));
+          }
+
+          let fullUser;
+
+          if (user.role === 'student') {
+            fullUser = await Student.findOne({userInfo: user.id});
+          }
+          else if (user.role === 'tutor') {
+            fullUser = await Tutor.findOne({userInfo: user.id});
+          }
+          fullUser.userId = user.id;
+          fullUser.role = user.role;
+          fullUser.balance = user.balance;
+          sendTokenResponse(200, res, fullUser);
 })(req, res)};
 
 
@@ -110,7 +122,7 @@ exports.login = (req, res, next) => {
 // @access    Private
 exports.loginByOAuth = asyncHandler(async (req, res, next) => {
   if (!req.user) {
-    return next(new createError(400, 'Đăng nhập không thành công'));
+    return next(new createError(400, 'Login fail'));
   }
 
   // create new user
@@ -134,9 +146,10 @@ exports.loginByOAuth = asyncHandler(async (req, res, next) => {
 // @access    Private
 exports.getMe = asyncHandler(async (req, res, next) => {
   if (!req.user) {
-    return next(new createError(400, 'Vui lòng đăng nhập'));
+    return next(new createError(400, 'Please sign in to continue'));
   }
 
+  // user is tutor or student, not user
   res.status(200).json({
     success: true,
     data: req.user
@@ -154,7 +167,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({email: email});
 
   if (!user) {
-    return next(new createError(404, 'Địa chỉ email không hợp lệ'));
+    return next(new createError(404, 'Email invalid'));
   }
 
   // Get reset token
@@ -168,9 +181,9 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   const msg = {
     to: email,
     from: process.env.HOST_EMAIL,
-    subject: 'Lấy lại mật khẩu ứng dụng Uber for tutor',
-    html: `<p> Bạn nhận được tin nhắn này vì bạn (hoặc ai đó) đã gửi yêu cầu lấy lại mật khẩu ứng dụng Uber for tutor. \n
-    Nhấn vào đường dẫn sau <a href="${process.env.SERVER_URL}/api/auth/resetpassword/${accountToken}"> để tạo mới mật khẩu </a>.</p> `
+    subject: 'Forgetting password Uber for tutor',
+    html: `<p> You are receiving this email because you (or someone else) has requested the reset of a password application Uber for tutor. \n
+    Please click this link <a href="${process.env.SERVER_URL}/api/auth/resetpassword/${accountToken}"> to update a new password </a>.</p> `
   }
 
   try {
@@ -178,14 +191,14 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: {
-        message: 'Chúng tôi đã gửi một đường dẫn tạo mới mật khẩu đến địa chỉ email của bạn'
+        message: 'We has sent update new password link to your email'
       }
     });
   } catch (error) {
     user.accountToken = undefined;
     user.accountTokenExpire = undefined;
     await user.save();
-    return next(new createError(400, 'Server bị lỗi, không thể gửi email'));
+    return next(new createError(400, 'Server err, cant send email'));
   }
 });
 
@@ -202,7 +215,7 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
       }
     });
 
-  if (!user) return next(new createError(400, 'Token không hợp lệ'));
+  if (!user) return next(new createError(400, 'Token invalid'));
 
   const url = `${process.env.CLIENT_URL}/updatepassword/${token}`;
   res.redirect(url);
@@ -221,7 +234,7 @@ exports.updateForgotPassword = asyncHandler(async (req, res, next) => {
       }
     });
 
-  if (!user) return next(new createError(400, 'Token không hợp lệ'));
+  if (!user) return next(new createError(400, 'Token invalid'));
 
   // Set new password
   const salt = await bcrypt.genSalt(10);
@@ -230,14 +243,30 @@ exports.updateForgotPassword = asyncHandler(async (req, res, next) => {
   user.accountTokenExpire = undefined;
   await user.save();
 
-  sendTokenResponse(200, res, user);
+  let fullUser;
+
+  if (user.role === 'student') {
+    fullUser = await Student.findOne({
+      userInfo: user.id
+    });
+  } else if (user.role === 'tutor') {
+    fullUser = await Tutor.findOne({
+      userInfo: user.id
+    });
+  }
+  fullUser.userId = user.id;
+  fullUser.role = user.role;
+  fullUser.balance = user.balance;
+  sendTokenResponse(200, res, fullUser);
 });
 
 
 const sendTokenResponse = (statusCode, res, user) => {
   const payload = {
     id: user.id,
-    role: user.role
+    userId: user.userId,
+    role: user.role,
+    balance: user.balance
   }
 
   console.log(payload);

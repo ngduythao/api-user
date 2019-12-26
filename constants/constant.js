@@ -1,12 +1,10 @@
 const constants = {
-    DEFAULT_IMG: "images/no-image.png",
-    CONTRACT_STATUS_PROCESSING: "CONTRACT_STATUS_PROCESSING",
-    CONTRACT_STATUS_COMPLAINING: "CONTRACT_STATUS_COMPLAINING",
-    CONTRACT_STATUS_COMPLETED: "CONTRACT_STATUS_COMPLETED",
-    CONTRACT_STATUS_CANCELED: "CONTRACT_STATUS_CANCELED",
-    COMPLAINT_STATUS_PROCESSING: "COMPLAINT_STATUS_PROCESSING",
-    COMPLAINT_STATUS_COMPLETED: "COMPLAINT_STATUS_COMPLETED",
-    COMPLAINT_STATUS_CANCELED: "COMPLAINT_STATUS_CANCELED"
+    Requesting: "Requesting",
+    Happening: "Happening",
+    Processing: "Processing",
+    Complaining: "Complaining",
+    Completed: "Completed",
+    Canceled: "Canceled"
 }
 
 module.exports = constants;

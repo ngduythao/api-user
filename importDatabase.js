@@ -26,6 +26,7 @@ const importData = async () => {
         // await Tutor.create(tutors);
         // await Student.create(students);
         // await Specialization.create(specializations);
+
         console.log('Data Imported...'.green.inverse);
     } catch (error) {
         console.log(error);
@@ -35,9 +36,8 @@ const importData = async () => {
 
 const deleteData = async() => {
     try {
-        await User.deleteMany();
-        await Tutor.deleteMany();
-        await Student.deleteMany();
+        await Tag.deleteMany();
+        await Specialization.deleteMany();
         console.log('Data Destroyed...'.red.inverse);
     } catch (error) {
         console.log(error);

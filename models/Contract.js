@@ -2,59 +2,59 @@ const mongoose = require('mongoose');
 const constants = require('../constants/constant');
 
 const {
-    CONTRACT_STATUS_PROCESSING,
-    CONTRACT_STATUS_COMPLAINING,
-    CONTRACT_STATUS_COMPLETED,
-    CONTRACT_STATUS_CANCELED
+    Requesting,
+    Happening,
+    Completed,
+    Complaining,
+    Canceled
 } = constants;
+
 
 
 const ContractSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: [true, 'Vui lòng điền tiêu đề hợp đồng']
+        required: [true, 'Please fill in a title for the contract']
     },
-    tutor:{
+    tutor: {
         type: mongoose.Schema.ObjectId,
         ref: 'Tutor',
-        required: [true, 'Vui lòng chọn người dạy']
+        required: [true, 'Please choose tutor']
     },
-    student:{
+    student: {
         type: mongoose.Schema.ObjectId,
         ref: 'Student',
-        required: [true, 'Vui lòng chọn người học']
+        required: [true, 'Please choose student']
     },
     status: {
-        type: [String],
+        type: String,
         required: true,
-        enum: [
-            CONTRACT_STATUS_PROCESSING,
-            CONTRACT_STATUS_COMPLAINING,
-            CONTRACT_STATUS_COMPLETED,
-            CONTRACT_STATUS_CANCELED
-        ]
+        enum: [Requesting, Happening, Completed, Complaining, Canceled]
     },
-    rentHours:{
+    rentHours: {
         type: Number,
-        required: [true, 'Vui lòng chọn số giờ thuê']
+        required: [true, 'Please choose rent hours']
     },
     contractAmount: {
         type: Number
     },
     isSuccess: {
-        type: Boolean,
-        default: false
+        type: Boolean
     },
     rating: {
         type: Number,
         min: 1,
-        max: 10,
-        required: [true, 'Thang điểm dánh giá từ 1 tới 10']
+        max: 5
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
+    description: {
+        type: String,
+        required: [true, 'Please add some text to describe contract']
     },
+    review: {
+        type: String
+    }
+}, {
+    timestamps: true
 });
 
 module.exports = mongoose.model('Contract', ContractSchema);

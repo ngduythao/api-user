@@ -6,14 +6,26 @@ const {
     authorized
 } = require('../middleware/auth')
 
+
 const {
-    updateTutor
+    getTutors,
+    getTutor,
+    updateTutor,
+    getTopTutors
 } = require('../controllers/tutor');
 
-router.use(protected)
+
+router
+    .route('/')
+    .get(getTutors)
+    .put(protected, authorized('tutor'), updateTutor);
 
 router
     .route('/:id')
-    .put(authorized('tutor'), updateTutor);
+    .get(getTutor)
+
+router
+    .route('/tops/rating')
+    .get(getTopTutors)
 
 module.exports = router;

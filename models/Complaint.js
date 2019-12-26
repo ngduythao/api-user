@@ -2,40 +2,31 @@ const mongoose = require('mongoose');
 const constants = require('../constants/constant');
 
 const {
-    COMPLAINT_STATUS_PROCESSING,
-    COMPLAINT_STATUS_COMPLETED,
-    COMPLAINT_STATUS_CANCELED
+    Processing, Completed, Canceled
 } = constants;
 
 
 const ComplaintSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: [true, 'Vui lòng điền tiêu đề khiếu nại']
-    },
-    student: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Student',
-        required: [true, 'Vui lòng chọn người học']
+        required: [true, 'Please fill in a title for the complaint']
     },
     contract: {
         type: mongoose.Schema.ObjectId,
         ref: 'Contract',
-        required: [true, 'Vui lòng chọn hợp đồng khiếu nại']
+        required: [true, 'Please choose the contract']
     },
     status: {
         type: String,
         required: true,
-        enum: [
-            COMPLAINT_STATUS_PROCESSING,
-            COMPLAINT_STATUS_COMPLETED,
-            COMPLAINT_STATUS_CANCELED
-        ]
+        enum: [Processing, Completed, Canceled]
     },
     description: {
         type: String,
-        required: [true, 'Vui lòng điền thông tin khiếu nai']
+        required: [true, 'Please add some text in description']
     }
+}, {
+    timestamps: true
 });
 
 module.exports = mongoose.model('Complaint', ComplaintSchema);

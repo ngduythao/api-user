@@ -4,7 +4,8 @@ const TutorSchema = new mongoose.Schema({
     userInfo: {
         type: mongoose.Schema.ObjectId,
         ref: 'User',
-        required: true
+        required: true,
+        unique: true
     },
     paymentPerHour: {
         type: Number
