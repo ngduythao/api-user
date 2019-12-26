@@ -102,7 +102,12 @@ exports.recharge = asyncHandler(async(req, res) => {
     })
 
     const user = await User.findById(req.user.userId);
-    user.balance += price;
+    if (user.role === 'student') {
+        user.balance += price;
+    } else
+    if (user.role === 'tutor') {
+        user.balance -= price;
+    }
     await user.save();
 
     res.status(200).json({
