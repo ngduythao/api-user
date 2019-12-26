@@ -272,7 +272,7 @@ exports.getTutors = asyncHandler(async (req, res, next) => {
 // @access    Public
 exports.getTopTutors = asyncHandler(async (req, res, next) => {
     const results = await Tutor.find()
-                    .sort({rating: -1}).limit(8)
+                    .sort({successRate: -1}).limit(9)
                     .populate(pipelineTutor);
                     
     res.status(200).json({
