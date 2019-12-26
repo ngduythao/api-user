@@ -90,7 +90,7 @@ exports.recharge = asyncHandler(async(req, res) => {
     let { token, price } = req.body;
     price = parseInt(price, 10);
     const user = await User.findById(req.user.userId);
-    if (user.role === 'tutor' && user.balance > price) {
+    if (user.role === 'tutor' && (user.balance - price) < 0) {
         return next(createError(400, 'You cant withdraw money largher than your balance'));
     }
     
