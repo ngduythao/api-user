@@ -18,16 +18,29 @@ const TutorSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'Tag'
     }],
-    selfIntro: String,
-    successRate: Number,
-    averageRating: Number,
+    selfIntro: {
+        type: String,
+        default: ''
+    },
+    successRate: {
+        type: Number,
+        default: 0
+    },
+    averageRating: {
+        type: Number,
+        default: 0
+    }
 }, {
-    toJSON: {virtuals: true},
-    toObject: {virtuals: true},
+    toJSON: {
+        virtuals: true
+    },
+    toObject: {
+        virtuals: true
+    },
     // timestamps: true
 })
 
-TutorSchema.virtual('histories', { 
+TutorSchema.virtual('histories', {
     ref: 'Contract',
     localField: '_id',
     foreignField: 'tutor',

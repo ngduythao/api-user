@@ -18,7 +18,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         enum: ['student', 'tutor']
     },
-    address: String,
+    address: {
+        type: String,
+        default: ''
+    },
     avatar: {
         type: String,
         default: 'https://my-final-project-ptudwnc.s3.amazonaws.com/default-image/41ea2374-59c9-409e-a8ad-21a8020e0b2a.jpg'
