@@ -86,7 +86,7 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
     });
 });
 
-exports.recharge = asyncHandler(async(req, res) => {
+exports.recharge = asyncHandler(async(req, res, next) => {
     let { token, price } = req.body;
     price = parseInt(price, 10);
     const user = await User.findById(req.user.userId);
